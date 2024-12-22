@@ -14,24 +14,12 @@
             --negative-color: #f44336;
         }
 
-        /* Dark Mode Variables */
-        body.dark-mode {
-            --primary-color: #8ab4f8;
-            --border-color: #444;
-            --card-bg: #1e1e1e;
-            --text-color: #f0f0f0;
-            --positive-color: #81c784;
-            --negative-color: #e57373;
-        }
-
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             line-height: 1.6;
             color: var(--text-color);
-            background-color: var(--card-bg);
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -82,7 +70,7 @@
             background: var(--card-bg);
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .card h3 {
@@ -103,13 +91,8 @@
             border-bottom: none;
         }
 
-        .positive {
-            color: var(--positive-color);
-        }
-
-        .negative {
-            color: var(--negative-color);
-        }
+        .positive { color: var(--positive-color); }
+        .negative { color: var(--negative-color); }
 
         .links-section {
             display: flex;
@@ -127,33 +110,11 @@
         }
 
         .description {
-            background: var(--card-bg);
+            background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-top: 20px;
-        }
-
-        .toggle-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .dark-mode-toggle {
-            cursor: pointer;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 14px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .dark-mode-toggle:hover {
-            background-color: var(--primary-color);
-            color: white;
         }
 
         @media (max-width: 768px) {
@@ -164,16 +125,172 @@
     </style>
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <div class="toggle-container">
-        <button class="dark-mode-toggle" id="darkModeToggle">Dark Mode</button>
-    </div>
-
     <div class="container">
         <a href="index.html" class="back-button">← Back to List</a>
         <div id="coinDetails">Loading...</div>
     </div>
 
     <script>
-        // Apply Dark Mode Based on LocalStorage
-        const darkModeToggle = document.getElementById('darkModeTo
+        async function fetchCoinDetails() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const coinId = urlParams.get('coinId');
+
+                if (!coinId) {
+                    throw new Error('No coin ID provided');
+                }
+
+                const response = await fetch(
+                    `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true&sparkline=true`
+                );
+                const data = await response.json();
+
+                document.title = `${data.name} (${data.symbol.toUpperCase()}) - Crypto Details`;
+
+                const detailsContainer = document.getElementById('coinDetails');
+                detailsContainer.innerHTML = `
+                    <div class="coin-header">
+                        <img src="${data.image.large}" alt="${data.name} logo">
+                        <div>
+                            <h1>${data.name} (${data.symbol.toUpperCase()})</h1>
+                            <p>Rank #${data.market_cap_rank || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-container">
+                        <div class="card">
+                            <h3>Price Information</h3>
+                            <div class="data-row">
+                                <span>Current Price:</span>
+                                <span>$${data.market_data.current_price.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>24h Low / High:</span>
+                                <span>$${data.market_data.low_24h.usd.toLocaleString()} / $${data.market_data.high_24h.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>All-Time High:</span>
+                                <span>$${data.market_data.ath.usd.toLocaleString()} (${new Date(data.market_data.ath_date.usd).toLocaleDateString()})</span>
+                            </div>
+                            <div class="data-row">
+                                <span>All-Time Low:</span>
+                                <span>$${data.market_data.atl.usd.toLocaleString()} (${new Date(data.market_data.atl_date.usd).toLocaleDateString()})</span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Price Changes</h3>
+                            <div class="data-row">
+                                <span>24h Change:</span>
+                                <span class="${data.market_data.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_24h?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>7d Change:</span>
+                                <span class="${data.market_data.price_change_percentage_7d >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_7d?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>30d Change:</span>
+                                <span class="${data.market_data.price_change_percentage_30d >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_30d?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>1y Change:</span>
+                                <span class="${data.market_data.price_change_percentage_1y >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_1y?.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Market Stats</h3>
+                            <div class="data-row">
+                                <span>Market Cap:</span>
+                                <span>$${data.market_data.market_cap.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>24h Volume:</span>
+                                <span>$${data.market_data.total_volume.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Circulating Supply:</span>
+                                <span>${data.market_data.circulating_supply.toLocaleString()} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Total Supply:</span>
+                                <span>${data.market_data.total_supply ? data.market_data.total_supply.toLocaleString() : 'N/A'} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                        </div>
+
+                        ${data.developer_data ? `
+                            <div class="card">
+                                <h3>Developer Data</h3>
+                                <div class="data-row">
+                                    <span>GitHub Stars:</span>
+                                    <span>${data.developer_data.stars || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Forks:</span>
+                                    <span>${data.developer_data.forks || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Issues:</span>
+                                    <span>${data.developer_data.total_issues || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Contributors:</span>
+                                    <span>${data.developer_data.contributors || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${data.community_data ? `
+                            <div class="card">
+                                <h3>Community Stats</h3>
+                                <div class="data-row">
+                                    <span>Twitter Followers:</span>
+                                    <span>${data.community_data.twitter_followers?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Reddit Subscribers:</span>
+                                    <span>${data.community_data.reddit_subscribers?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Telegram Users:</span>
+                                    <span>${data.community_data.telegram_channel_user_count?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="card">
+                        <h3>Links</h3>
+                        <div class="links-section">
+                            ${data.links.homepage[0] ? `<a href="${data.links.homepage[0]}" target="_blank" class="link-button">Website</a>` : ''}
+                            ${data.links.blockchain_site[0] ? `<a href="${data.links.blockchain_site[0]}" target="_blank" class="link-button">Blockchain Explorer</a>` : ''}
+                            ${data.links.official_forum_url[0] ? `<a href="${data.links.official_forum_url[0]}" target="_blank" class="link-button">Official Forum</a>` : ''}
+                            ${data.links.subreddit_url ? `<a href="${data.links.subreddit_url}" target="_blank" class="link-button">Reddit</a>` : ''}
+                            ${data.links.twitter_screen_name ? `<a href="https://twitter.com/${data.links.twitter_screen_name}" target="_blank" class="link-button">Twitter</a>` : ''}
+                            ${data.links.telegram_channel_identifier ? `<a href="https://t.me/${data.links.telegram_channel_identifier}" target="_blank" class="link-button">Telegram</a>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="description">
+                        <h3>About ${data.name}</h3>
+                        <div>${data.description.en || 'No description available.'}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error fetching coin details:', error);
+                document.getElementById('coinDetails').innerHTML = 'Error loading coin details. Please try again later.';
+            }
+        }
+
+        fetchCoinDetails();
+    </script>
+</body>
+</html>
