@@ -72,8 +72,11 @@ exports.handler = async function(event, context) {
             };
         }
 
+        const category = event.queryStringParameters?.category;
+        const categoryParam = category ? `&category=${category}` : '';
+
         const response = await fetch(
-            'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1'
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`
         );
         
         const data = await response.json();
