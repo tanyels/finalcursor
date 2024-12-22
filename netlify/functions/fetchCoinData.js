@@ -6,11 +6,10 @@ const CACHE_DURATION = 60 * 1000; // 1 minute in milliseconds
 
 exports.handler = async function(event, context) {
     try {
-        // Check if we need to refresh the cache
         const now = Date.now();
         if (!cachedData || (now - lastFetchTime) > CACHE_DURATION) {
             const response = await fetch(
-                'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false',
+                'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage_24h=true&ath=true',
                 {
                     headers: {
                         'x-cg-demo-api-key': 'CG-4rXLTancGryw45RBGe2ua7Ui'
@@ -22,7 +21,11 @@ exports.handler = async function(event, context) {
                 throw new Error(`API responded with status: ${response.status}`);
             }
             
-            cachedData = await response.json();
+            const rawData = await response.json();
+            cachedData = rawData.map(coin => ({
+                ...coin,
+                xToAth: (coin.ath / coin.current_price).toFixed(2)
+            }));
             lastFetchTime = now;
         }
 

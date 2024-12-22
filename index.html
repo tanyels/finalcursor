@@ -12,8 +12,12 @@
             background-color: #f0f0f0;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
         .header {
             display: flex;
@@ -21,22 +25,43 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .coin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .coin-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
-        .coin-card img {
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .coin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .coin-info img {
             width: 32px;
             height: 32px;
-            margin-right: 10px;
-            vertical-align: middle;
+        }
+        .coin-name-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .ticker {
+            color: #666;
+            font-size: 0.85em;
+        }
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .x-to-ath {
+            color: #666;
+            font-size: 0.85em;
         }
         .price-up {
             color: #4CAF50;
@@ -55,7 +80,18 @@
             <h1>Cryptocurrency Rankings</h1>
             <div id="last-updated"></div>
         </div>
-        <div id="coin-list" class="coin-grid"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>24h Change</th>
+                    <th>Market Cap</th>
+                </tr>
+            </thead>
+            <tbody id="coin-list"></tbody>
+        </table>
     </div>
 
     <script>
@@ -67,18 +103,30 @@
                 const coinList = document.getElementById('coin-list');
                 coinList.innerHTML = '';
                 
-                data.forEach(coin => {
+                data.forEach((coin, index) => {
                     const priceChangeClass = coin.price_change_percentage_24h >= 0 ? 'price-up' : 'price-down';
-                    const card = document.createElement('div');
-                    card.className = 'coin-card';
-                    card.innerHTML = `
-                        <img src="${coin.image}" alt="${coin.name}">
-                        <h3>${coin.name} (${coin.symbol.toUpperCase()})</h3>
-                        <p>Price: $${coin.current_price.toLocaleString()}</p>
-                        <p class="${priceChangeClass}">24h Change: ${coin.price_change_percentage_24h.toFixed(2)}%</p>
-                        <p>Market Cap: $${coin.market_cap.toLocaleString()}</p>
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="coin-info">
+                                <img src="${coin.image}" alt="${coin.name}">
+                                <div class="coin-name-container">
+                                    <span>${coin.name}</span>
+                                    <span class="ticker">${coin.symbol.toUpperCase()}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="price-container">
+                                <span>$${coin.current_price.toLocaleString()}</span>
+                                <span class="x-to-ath">${coin.xToAth}x to ATH</span>
+                            </div>
+                        </td>
+                        <td class="${priceChangeClass}">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+                        <td>$${coin.market_cap.toLocaleString()}</td>
                     `;
-                    coinList.appendChild(card);
+                    coinList.appendChild(row);
                 });
                 
                 document.getElementById('last-updated').textContent = 
