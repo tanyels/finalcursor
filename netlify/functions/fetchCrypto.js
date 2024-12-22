@@ -76,12 +76,19 @@ exports.handler = async function(event, context) {
             };
         }
 
+        // Add delay between requests to avoid rate limiting
+        if (lastFetchTimes.size > 0) {
+            const lastFetchTime = Math.max(...lastFetchTimes.values());
+            if (now - lastFetchTime < 1000) { // 1 second delay between requests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
         const response = await fetch(
-            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}`
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}&sparkline=false`
         );
 
         if (!response.ok) {
-            console.error(`API Error: ${response.status} ${response.statusText}`);
             throw new Error(`API returned ${response.status}: ${response.statusText}`);
         }
 
@@ -89,7 +96,6 @@ exports.handler = async function(event, context) {
 
         // Verify data is an array
         if (!Array.isArray(data)) {
-            console.error('Invalid data format received:', data);
             throw new Error('Invalid data format received from API');
         }
 
@@ -110,9 +116,18 @@ exports.handler = async function(event, context) {
         };
 
     } catch (error) {
+        console.error('Server Error:', error.message);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Failed fetching data' })
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ 
+                error: 'Failed fetching data',
+                message: error.message,
+                page: event.queryStringParameters?.page || 1
+            })
         };
     }
 }; 
