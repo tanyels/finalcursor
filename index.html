@@ -480,6 +480,8 @@
                     </td>
                     <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
                     <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                    <td>$${coin.ath.toLocaleString()}</td>
+                    <td>$${coin.atl.toLocaleString()}</td>
                 `;
                 tableBody.appendChild(row);
 
@@ -488,7 +490,7 @@
                 expandableRow.className = 'expandable-row';
                 expandableRow.id = `details-${coin.id}`;
                 expandableRow.innerHTML = `
-                    <td colspan="4">
+                    <td colspan="6">
                         <div class="detail-list">
                             <div id="details-content-${coin.id}">Loading...</div>
                         </div>
@@ -639,14 +641,6 @@
                             <div class="detail-item">
                                 <span class="detail-label">24h Low:</span>
                                 <span class="detail-value">$${data.market_data.low_24h.usd.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">All-Time High:</span>
-                                <span class="detail-value">$${data.market_data.ath.usd.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">All-Time Low:</span>
-                                <span class="detail-value">$${data.market_data.atl.usd.toLocaleString()}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Circulating Supply:</span>
