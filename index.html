@@ -482,14 +482,12 @@
                     <th><span class="row-title">Rank</span></th>
                     <th><span class="row-title">Name</span></th>
                     <th><span class="row-title">Price (USD)</span></th>
-                    <th><span class="row-title">24h % Change</span></th>
                     <th><span class="row-title">ATH</span></th>
-                    <th><span class="row-title">ATL</span></th>
                 </tr>
             </thead>
             <tbody id="cryptoTableBody">
                 <tr>
-                    <td colspan="6">Loading...</td>
+                    <td colspan="4">Loading...</td>
                 </tr>
             </tbody>
         </table>
@@ -526,12 +524,11 @@
             data.forEach((coin, index) => {
                 const row = document.createElement('tr');
                 const priceChange = coin.price_change_percentage_24h;
-                const changeClass = priceChange >= 0 ? 'positive' : 'negative';
                 const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
                 const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
                 
-                // Format dates
-                const athDate = new Date(coin.ath_date).toLocaleDateString();
+                // Calculate ATH percentage
+                const athPercentage = ((coin.current_price - coin.ath) / coin.ath * 100).toFixed(2);
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
@@ -551,26 +548,25 @@
                             <span class="${priceClass}">$${coin.current_price.toLocaleString()}</span>
                             <div style="font-size: 0.8em;">
                                 <span style="color: #888;">last 24h</span>
-                                <span class="${changeClass}">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</span>
+                                <span class="${priceChange >= 0 ? 'positive' : 'negative'}">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</span>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div style="display: flex; flex-direction: column;">
                             <span>$${coin.ath.toLocaleString()}</span>
-                            <span style="color: #888; font-size: 0.8em;">${athDate}</span>
+                            <span style="color: #888; font-size: 0.8em;">${athPercentage}% from ATH</span>
                         </div>
                     </td>
-                    <td>$${coin.atl.toLocaleString()}</td>
                 `;
                 tableBody.appendChild(row);
 
-                // Create expandable row
+                // Update expandable row
                 const expandableRow = document.createElement('tr');
                 expandableRow.className = 'expandable-row';
                 expandableRow.id = `details-${coin.id}`;
                 expandableRow.innerHTML = `
-                    <td colspan="6">
+                    <td colspan="4">
                         <div class="detail-list">
                             <div id="details-content-${coin.id}">Loading...</div>
                         </div>
