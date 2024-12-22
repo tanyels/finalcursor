@@ -466,27 +466,25 @@
             align-items: center;
         }
 
-        /* Add to your existing styles */
-        #pageInput {
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        #pageInput::-webkit-inner-spin-button,
-        #pageInput::-webkit-outer-spin-button {
-            opacity: 1;
-        }
-
-        .pagination button {
-            /* Update existing pagination button styles */
-            margin: 2px;
-            padding: 8px 12px;
-            cursor: pointer;
-            border: 1px solid var(--table-border-color);
+        /* Add to your existing CSS */
+        .pagination .arrow-button {
+            padding: 8px 15px;
+            margin: 0 10px;
+            font-size: 16px;
+            line-height: 1;
             background-color: var(--table-header-bg);
+            border: 1px solid var(--table-border-color);
             color: var(--text-color);
-            min-width: 35px;
+            cursor: pointer;
             border-radius: 4px;
+        }
+
+        .pagination .arrow-button:not(:disabled):hover {
+            background-color: var(--suggestion-hover-bg);
+        }
+
+        .pagination button:not(.arrow-button) {
+            min-width: 40px;
         }
     </style>
 </head>
@@ -519,10 +517,11 @@
     <div class="pagination" id="pagination"></div>
 
     <script>
-        // Pagination Variables
+        // Update pagination variables at the top of the script
         let currentPage = 1;
         const coinsPerPage = 100;
-        const totalPages = 100; // Adjust as needed based on available data
+        const maxPages = 25; // CoinGecko's free API typically allows up to 25 pages
+        const pagesPerGroup = 5; // Show 5 page numbers at a time
 
         // Fetch and Display Data
         async function fetchData(page = 1) {
@@ -618,16 +617,26 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
             
-            // Previous Button
-            if (currentPage > 1) {
-                const prevButton = document.createElement('button');
-                prevButton.textContent = 'Previous';
-                prevButton.onclick = () => changePage(currentPage - 1);
-                pagination.appendChild(prevButton);
+            // Calculate current page group
+            const currentGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+            const startPage = currentGroup * pagesPerGroup + 1;
+            const endPage = Math.min(startPage + pagesPerGroup - 1, maxPages);
+            
+            // Left Arrow
+            const leftArrow = document.createElement('button');
+            leftArrow.innerHTML = '&larr;'; // Left arrow symbol
+            leftArrow.classList.add('arrow-button');
+            if (currentPage <= pagesPerGroup) {
+                leftArrow.disabled = true;
+                leftArrow.style.opacity = '0.5';
+                leftArrow.style.cursor = 'default';
+            } else {
+                leftArrow.onclick = () => changePage(startPage - pagesPerGroup);
             }
+            pagination.appendChild(leftArrow);
 
-            // First 10 Pages
-            for (let i = 1; i <= 10; i++) {
+            // Page Numbers
+            for (let i = startPage; i <= endPage; i++) {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
                 if (i === currentPage) {
@@ -638,68 +647,18 @@
                 pagination.appendChild(pageButton);
             }
 
-            // Next Button
-            if (currentPage < totalPages) {
-                const nextButton = document.createElement('button');
-                nextButton.textContent = 'Next';
-                nextButton.onclick = () => changePage(currentPage + 1);
-                pagination.appendChild(nextButton);
+            // Right Arrow
+            const rightArrow = document.createElement('button');
+            rightArrow.innerHTML = '&rarr;'; // Right arrow symbol
+            rightArrow.classList.add('arrow-button');
+            if (endPage >= maxPages) {
+                rightArrow.disabled = true;
+                rightArrow.style.opacity = '0.5';
+                rightArrow.style.cursor = 'default';
+            } else {
+                rightArrow.onclick = () => changePage(startPage + pagesPerGroup);
             }
-
-            // Add page input box
-            const pageInputContainer = document.createElement('div');
-            pageInputContainer.style.marginTop = '10px';
-            pageInputContainer.innerHTML = `
-                <input type="number" id="pageInput" min="1" placeholder="Go to page..." 
-                    style="padding: 8px; width: 100px; margin-right: 10px; background: var(--search-bg); color: var(--text-color); border: 1px solid var(--table-border-color);">
-                <button onclick="goToInputPage()">Go</button>
-            `;
-            pagination.appendChild(pageInputContainer);
-        }
-
-        // Add this new function to handle page input
-        async function goToInputPage() {
-            const input = document.getElementById('pageInput');
-            let targetPage = parseInt(input.value);
-            
-            try {
-                // First try to fetch the target page to see if it exists
-                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${targetPage}&per_page=${coinsPerPage}`);
-                const result = await response.json();
-                const data = result.data;
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    // If page doesn't exist, fetch the last page
-                    let lastPage = 1;
-                    let hasData = true;
-                    
-                    // Binary search to find the last available page
-                    let left = 1;
-                    let right = 1000; // Start with a reasonable upper limit
-                    
-                    while (left <= right) {
-                        const mid = Math.floor((left + right) / 2);
-                        const testResponse = await fetch(`/.netlify/functions/fetchCrypto?page=${mid}&per_page=${coinsPerPage}`);
-                        const testResult = await testResponse.json();
-                        
-                        if (Array.isArray(testResult.data) && testResult.data.length > 0) {
-                            lastPage = mid;
-                            left = mid + 1;
-                        } else {
-                            right = mid - 1;
-                        }
-                    }
-                    
-                    targetPage = lastPage;
-                    input.value = lastPage; // Update input to show the actual page
-                }
-
-                // Change to the valid page
-                changePage(targetPage);
-            } catch (error) {
-                console.error('Error finding page:', error);
-                alert('Error finding page. Please try again.');
-            }
+            pagination.appendChild(rightArrow);
         }
 
         async function changePage(page) {
