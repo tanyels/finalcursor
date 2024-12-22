@@ -1,6 +1,10 @@
 [build]
   publish = "."
   command = "echo 'No build required'"
+  functions = "netlify/functions"
+
+[build.environment]
+  COINGECKO_API_KEY = "your_api_key_here"
 
 [functions]
-  directory = "netlify/functions"  
+  directory = "netlify/functions" 

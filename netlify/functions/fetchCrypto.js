@@ -2,7 +2,8 @@ const fetch = require('node-fetch');
 
 // Cache variables with longer duration
 const CACHE_DURATION = 300000; // 5 minutes in milliseconds
-const RATE_LIMIT_DELAY = 2000; // 2 seconds between requests
+const RATE_LIMIT_DELAY = 1000; // Reduced to 1 second since we have API key
+const API_KEY = process.env.COINGECKO_API_KEY;
 
 // Cache variables
 let cachedData = new Map();
@@ -27,6 +28,12 @@ exports.handler = async function(event, context) {
         const page = parseInt(event.queryStringParameters?.page) || 1;
         const per_page = parseInt(event.queryStringParameters?.per_page) || 100;
         
+        // Common headers for all requests
+        const headers = {
+            'x-cg-demo-api-key': API_KEY,
+            'Content-Type': 'application/json'
+        };
+
         if (coinId) {
             // Handle coin detail request
             const lastCoinFetch = coinDetailsFetchTimes.get(coinId) || 0;
@@ -46,7 +53,8 @@ exports.handler = async function(event, context) {
             }
 
             const response = await fetch(
-                `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true&sparkline=false`
+                `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true&sparkline=false`,
+                { headers }
             );
             
             if (!response.ok) {
@@ -89,7 +97,8 @@ exports.handler = async function(event, context) {
         }
 
         const response = await fetch(
-            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}&sparkline=false`
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}&sparkline=false`,
+            { headers }
         );
 
         if (!response.ok) {
