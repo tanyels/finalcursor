@@ -465,6 +465,35 @@
             gap: 5px;
             align-items: center;
         }
+
+        /* Add these styles to your CSS */
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .category-button {
+            padding: 8px 16px;
+            background-color: var(--table-header-bg);
+            border: 1px solid var(--table-border-color);
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-button:hover {
+            background-color: var(--suggestion-hover-bg);
+        }
+
+        .category-button.active {
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            border-color: var(--accent-color);
+        }
     </style>
 </head>
 <body>
@@ -472,6 +501,12 @@
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
         <div id="searchSuggestions"></div>
+    </div>
+
+    <!-- Add this after the search container and before the h1 -->
+    <div class="category-filters" id="categoryFilters">
+        <button class="category-button active" data-category="all">All</button>
+        <!-- Other category buttons will be added dynamically -->
     </div>
 
     <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
@@ -501,10 +536,60 @@
         const coinsPerPage = 100;
         const totalPages = 100; // Adjust as needed based on available data
 
+        // Add these variables at the top of your script
+        let currentCategory = 'all';
+        const categories = [
+            'all',
+            'cryptocurrency',
+            'decentralized-finance-defi',
+            'smart-contract-platform',
+            'non-fungible-tokens-nft',
+            'gaming',
+            'metaverse',
+            'layer-1',
+            'layer-2',
+            'meme',
+            'stablecoin'
+        ];
+
+        // Add this function to create category buttons
+        function createCategoryButtons() {
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = ''; // Clear existing buttons
+            
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = `category-button ${category === currentCategory ? 'active' : ''}`;
+                button.setAttribute('data-category', category);
+                // Format category name for display
+                const displayName = category === 'all' ? 'All' : 
+                    category.split('-')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                button.textContent = displayName;
+                
+                button.onclick = () => {
+                    // Update active button
+                    document.querySelectorAll('.category-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    
+                    // Update current category and fetch data
+                    currentCategory = category;
+                    currentPage = 1; // Reset to first page
+                    fetchData();
+                };
+                
+                container.appendChild(button);
+            });
+        }
+
         // Fetch and Display Data
         async function fetchData(page = 1) {
             try {
-                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}`);
+                const categoryParam = currentCategory === 'all' ? '' : `&category=${currentCategory}`;
+                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}${categoryParam}`);
                 const result = await response.json();
                 const data = result.data;
 
@@ -755,6 +840,9 @@
                 detailsRow.classList.remove('expanded');
             }
         }
+
+        // Add this to your initialization code
+        createCategoryButtons();
     </script>
 </body>
 </html>
