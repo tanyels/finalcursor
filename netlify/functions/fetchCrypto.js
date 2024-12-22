@@ -2,40 +2,55 @@ const fetch = require('node-fetch');
 
 // Cache variables with longer duration
 const CACHE_DURATION = 300000; // 5 minutes in milliseconds
-const RATE_LIMIT_DELAY = 1000; // Reduced to 1 second since we have API key
+const RATE_LIMIT_DELAY = 1000; // 1 second between requests
 const API_KEY = process.env.COINGECKO_API_KEY;
+const MAX_PAGES = 25; // Maximum pages we'll fetch
 
 // Cache variables
 let cachedData = new Map();
 let lastFetchTimes = new Map();
 let lastRequestTime = 0;
+let isInitialDataFetched = false;
 
 // Cache for individual coin details
 let coinDetailsCache = new Map();
 let coinDetailsFetchTimes = new Map();
 
+async function fetchAllPages() {
+    const allData = [];
+    for (let page = 1; page <= MAX_PAGES; page++) {
+        const response = await fetch(
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false`,
+            {
+                headers: {
+                    'x-cg-demo-api-key': API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) break;
+        
+        allData.push(...data);
+        await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+    }
+    return allData;
+}
+
 exports.handler = async function(event, context) {
     try {
         const now = Date.now();
-
-        // Global rate limiting
-        if (now - lastRequestTime < RATE_LIMIT_DELAY) {
-            await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-        }
-        lastRequestTime = now;
-
         const coinId = event.queryStringParameters?.coinId;
         const page = parseInt(event.queryStringParameters?.page) || 1;
         const per_page = parseInt(event.queryStringParameters?.per_page) || 100;
-        
-        // Common headers for all requests
-        const headers = {
-            'x-cg-demo-api-key': API_KEY,
-            'Content-Type': 'application/json'
-        };
 
+        // Handle coin details request
         if (coinId) {
-            // Handle coin detail request
             const lastCoinFetch = coinDetailsFetchTimes.get(coinId) || 0;
             
             if (coinDetailsCache.has(coinId) && (now - lastCoinFetch) < CACHE_DURATION) {
@@ -54,7 +69,12 @@ exports.handler = async function(event, context) {
 
             const response = await fetch(
                 `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true&sparkline=false`,
-                { headers }
+                {
+                    headers: {
+                        'x-cg-demo-api-key': API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
             
             if (!response.ok) {
@@ -80,39 +100,22 @@ exports.handler = async function(event, context) {
         }
 
         // Handle main list request with pagination
+        if (!isInitialDataFetched || (now - Math.min(...lastFetchTimes.values())) > CACHE_DURATION) {
+            // Fetch all pages and store in cache
+            const allData = await fetchAllPages();
+            isInitialDataFetched = true;
+            
+            // Split data into pages and cache each page
+            for (let i = 0; i < allData.length; i += per_page) {
+                const pageNum = Math.floor(i / per_page) + 1;
+                const pageData = allData.slice(i, i + per_page);
+                cachedData.set(`page_${pageNum}`, pageData);
+                lastFetchTimes.set(`page_${pageNum}`, now);
+            }
+        }
+
         const cacheKey = `page_${page}`;
-        
-        if (cachedData.has(cacheKey) && (now - lastFetchTimes.get(cacheKey)) < CACHE_DURATION) {
-            return {
-                statusCode: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                body: JSON.stringify({
-                    data: cachedData.get(cacheKey),
-                    fromCache: true
-                })
-            };
-        }
-
-        const response = await fetch(
-            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}&sparkline=false`,
-            { headers }
-        );
-
-        if (!response.ok) {
-            throw new Error(`API returned ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        if (!Array.isArray(data)) {
-            throw new Error('Invalid data format received from API');
-        }
-
-        cachedData.set(cacheKey, data);
-        lastFetchTimes.set(cacheKey, now);
+        const pageData = cachedData.get(cacheKey) || [];
 
         return {
             statusCode: 200,
@@ -121,8 +124,9 @@ exports.handler = async function(event, context) {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                data: data,
-                fromCache: false
+                data: pageData,
+                fromCache: true,
+                totalPages: Math.ceil(cachedData.size)
             })
         };
 
