@@ -54,7 +54,7 @@ exports.handler = async function(event, context) {
         const now = Date.now();
         if (!cachedData || (now - lastFetchTime) > CACHE_DURATION) {
             const rawData = await fetchAllPages();
-            if (!Array.isArray(rawData) || rawData.length === 0) {
+            if (!Array.isArray(rawData)) {
                 throw new Error('No data received from API');
             }
             
@@ -73,7 +73,7 @@ exports.handler = async function(event, context) {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify(cachedData)
+            body: JSON.stringify(cachedData || [])
         };
     } catch (error) {
         console.error('Handler Error:', error);
@@ -83,10 +83,7 @@ exports.handler = async function(event, context) {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ 
-                error: 'Failed to fetch cryptocurrency data',
-                details: error.message
-            })
+            body: JSON.stringify([]) // Return empty array on error
         };
     }
 };
