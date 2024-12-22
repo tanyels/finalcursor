@@ -4,7 +4,7 @@ let cachedData = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 60 * 1000; // 1 minute in milliseconds
 const ITEMS_PER_PAGE = 250;
-const PAGES_TO_FETCH = 20; // Will fetch 5000 coins (250 * 20)
+const PAGES_TO_FETCH = 4; // Will fetch 1000 coins
 
 async function fetchAllPages() {
     const allData = [];
@@ -38,7 +38,7 @@ async function fetchAllPages() {
 
             // Add delay between requests
             if (page < PAGES_TO_FETCH) {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay to avoid rate limits
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
         }
     } catch (error) {
@@ -54,7 +54,7 @@ exports.handler = async function(event, context) {
         const now = Date.now();
         if (!cachedData || (now - lastFetchTime) > CACHE_DURATION) {
             const rawData = await fetchAllPages();
-            if (!Array.isArray(rawData)) {
+            if (!Array.isArray(rawData) || rawData.length === 0) {
                 throw new Error('No data received from API');
             }
             
@@ -73,7 +73,7 @@ exports.handler = async function(event, context) {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify(cachedData || [])
+            body: JSON.stringify(cachedData)
         };
     } catch (error) {
         console.error('Handler Error:', error);
@@ -83,7 +83,10 @@ exports.handler = async function(event, context) {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify([]) // Return empty array on error
+            body: JSON.stringify({ 
+                error: 'Failed to fetch cryptocurrency data',
+                details: error.message
+            })
         };
     }
 };
