@@ -539,14 +539,15 @@
         // Add these variables at the top of your script
         let currentCategory = 'all';
 
-        // Replace the hardcoded categories array with a function to fetch categories
+        // Update the fetchCategories function
         async function fetchCategories() {
             try {
                 const response = await fetch('/.netlify/functions/fetchCrypto?getCategories=true');
                 const result = await response.json();
                 if (result.data) {
-                    // Add 'all' category at the beginning
-                    const categories = ['all', ...result.data.map(cat => cat.category_id)];
+                    // Add 'all' category at the beginning and map the categories correctly
+                    const categories = ['all', ...result.data.map(cat => cat.id || cat)];
+                    console.log('Fetched categories:', categories); // For debugging
                     return categories;
                 }
                 return ['all']; // Fallback if no categories are found
@@ -563,7 +564,7 @@
             fetchData();
         }
 
-        // Update createCategoryButtons to accept categories as parameter
+        // Update createCategoryButtons function to handle category names better
         function createCategoryButtons(categories) {
             const container = document.getElementById('categoryFilters');
             container.innerHTML = '';
@@ -574,10 +575,15 @@
                 button.setAttribute('data-category', category);
                 
                 // Format the display name
-                const displayName = category === 'all' ? 'All' : 
-                    category.split('_')
+                let displayName = 'All';
+                if (category !== 'all') {
+                    displayName = category
+                        .replace(/-/g, ' ')
+                        .replace(/_/g, ' ')
+                        .split(' ')
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ');
+                }
                 
                 button.textContent = displayName;
                 
