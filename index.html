@@ -529,77 +529,10 @@
         const coinsPerPage = 100;
         const totalPages = 100; // Adjust as needed based on available data
 
-        // Add these variables at the top of your script
-        let currentCategory = 'all';
-
-        // Update the fetchCategories function
-        async function fetchCategories() {
-            try {
-                const response = await fetch('/.netlify/functions/fetchCrypto?getCategories=true');
-                const result = await response.json();
-                if (result.data) {
-                    // Add 'all' category at the beginning and map the categories correctly
-                    const categories = ['all', ...result.data.map(cat => cat.id || cat)];
-                    console.log('Fetched categories:', categories); // For debugging
-                    return categories;
-                }
-                return ['all']; // Fallback if no categories are found
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-                return ['all']; // Fallback on error
-            }
-        }
-
-        // Update the initialization code
-        async function initialize() {
-            const categories = await fetchCategories();
-            createCategoryButtons(categories);
-            fetchData();
-        }
-
-        // Update createCategoryButtons function to handle category names better
-        function createCategoryButtons(categories) {
-            const container = document.getElementById('categoryFilters');
-            container.innerHTML = '';
-            
-            categories.forEach(category => {
-                const button = document.createElement('button');
-                button.className = `category-button ${category === currentCategory ? 'active' : ''}`;
-                button.setAttribute('data-category', category);
-                
-                // Format the display name
-                let displayName = 'All';
-                if (category !== 'all') {
-                    displayName = category
-                        .replace(/-/g, ' ')
-                        .replace(/_/g, ' ')
-                        .split(' ')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ');
-                }
-                
-                button.textContent = displayName;
-                
-                button.onclick = () => {
-                    document.querySelectorAll('.category-button').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    button.classList.add('active');
-                    
-                    currentCategory = category;
-                    currentPage = 1;
-                    fetchData();
-                };
-                
-                container.appendChild(button);
-            });
-        }
-
         // Fetch and Display Data
         async function fetchData(page = 1) {
             try {
-                const categoryParam = currentCategory === 'all' ? '' : `&category=${currentCategory}`;
-                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}${categoryParam}`);
+                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}`);
                 const result = await response.json();
                 
                 if (result.error) {
@@ -630,7 +563,8 @@
 
             tableBody.innerHTML = '';
 
-            for (const coin of data) {
+            for (let index = 0; index < data.length; index++) {
+                const coin = data[index];
                 if (!coin || !coin.current_price || !coin.ath) continue;
 
                 // Fetch coin details to get category
@@ -744,7 +678,7 @@
         }
 
         // Initial Fetch
-        initialize();
+        fetchData();
 
         // Update Data Every Minute
         setInterval(() => fetchData(currentPage), 60000);
