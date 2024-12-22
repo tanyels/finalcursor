@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tracker</title>
     <style>
+        /* Original CSS (unchanged) */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -29,9 +30,34 @@
         .negative {
             color: red;
         }
+
+        <!-- Added for Dark Mode -->
+        :root {
+            --background-color: #ffffff;
+            --text-color: #000000;
+        }
+
+        /* We reuse the default body style, but inject a dynamic background and color. */
+        body {
+            /* Keep existing styles from above; just add the color/bkg lines below */
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* The dark-mode class dynamically overrides the CSS variables */
+        body.dark-mode {
+            --background-color: #121212;
+            --text-color: #f0f0f0;
+        }
+        /* End of Added for Dark Mode */
     </style>
 </head>
 <body>
+    <!-- Added for Dark Mode: Toggle button (position it anywhere you like) -->
+    <button id="darkModeToggle" style="margin-bottom: 20px;">Dark Mode</button>
+    <!-- End of Added for Dark Mode -->
+
     <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
     <table id="cryptoTable">
         <thead>
@@ -82,6 +108,17 @@
 
         // Update data every minute
         setInterval(fetchData, 60000);
+
+        // Added for Dark Mode: Toggle logic
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            // Optionally switch button text as well
+            darkModeToggle.textContent = document.body.classList.contains('dark-mode')
+                ? 'Light Mode'
+                : 'Dark Mode';
+        });
+        // End of Added for Dark Mode
     </script>
 </body>
-</html> 
+</html>
