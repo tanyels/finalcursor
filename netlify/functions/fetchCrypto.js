@@ -11,12 +11,32 @@ let coinDetailsFetchTimes = new Map();
 
 exports.handler = async function(event, context) {
     try {
-        // Check if this is a coin detail request
         const coinId = event.queryStringParameters?.coinId;
         const page = event.queryStringParameters?.page || 1;
         const perPage = event.queryStringParameters?.per_page || 100;
         const category = event.queryStringParameters?.category;
-        
+        const search = event.queryStringParameters?.search;
+
+        // Handle search request
+        if (search) {
+            const response = await fetch(
+                `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(search)}`
+            );
+            const data = await response.json();
+            return {
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    data: data,
+                    fromCache: false
+                })
+            };
+        }
+
+        // Check if this is a coin detail request
         if (coinId) {
             // Handle coin detail request
             const now = Date.now();
@@ -82,8 +102,17 @@ exports.handler = async function(event, context) {
             `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`
         );
         
+        if (!response.ok) {
+            throw new Error(`API responded with status ${response.status}`);
+        }
+
         const data = await response.json();
-        
+
+        // Validate data
+        if (!data || !Array.isArray(data)) {
+            throw new Error('Invalid data received from API');
+        }
+
         // Update cache with new structure
         if (!cachedData) cachedData = {};
         cachedData[cacheKey] = data;
