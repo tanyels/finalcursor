@@ -1,0 +1,9 @@
+{
+    "name": "netlify-crypto-tracker",
+    "version": "1.0.0",
+    "description": "Cryptocurrency tracker with serverless caching",
+    "main": "index.html",
+    "dependencies": {
+      "node-fetch": "^2.6.7"
+    }
+  }

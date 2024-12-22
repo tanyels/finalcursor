@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
+    <table id="cryptoTable">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Price (USD)</th>
+                <th>24h % Change</th>
+            </tr>
+        </thead>
+        <tbody id="cryptoTableBody">
+            <tr>
+                <td colspan="4">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('/.netlify/functions/fetchCrypto');
+                const result = await response.json();
+                const data = result.data;
+
+                const tableBody = document.getElementById('cryptoTableBody');
+                tableBody.innerHTML = '';
+
+                data.forEach((coin, index) => {
+                    const row = document.createElement('tr');
+                    const priceChange = coin.price_change_percentage_24h;
+                    const changeClass = priceChange >= 0 ? 'positive' : 'negative';
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${coin.name} (${coin.symbol.toUpperCase()})</td>
+                        <td>$${coin.current_price.toLocaleString()}</td>
+                        <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Fetch initial data
+        fetchData();
+
+        // Update data every minute
+        setInterval(fetchData, 60000);
+    </script>
+</body>
+</html> 
