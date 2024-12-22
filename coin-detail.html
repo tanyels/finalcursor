@@ -7,12 +7,12 @@
     <style>
         :root {
             --primary-color: #2196F3;
-            --background-color: #ffffff;
-            --text-color: #333;
-            --card-bg: #f9f9f9;
             --border-color: #ddd;
+            --card-bg: #f9f9f9;
+            --text-color: #333;
             --positive-color: #4CAF50;
             --negative-color: #f44336;
+            --background-color: #ffffff;
         }
 
         /* Dark mode overrides */
@@ -139,8 +139,8 @@
 </head>
 <body>
     <!-- Add Dark Mode Toggle -->
-    <div class="toggle-container" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-        <button class="dark-mode-toggle" id="darkModeToggle" style="padding: 8px 12px; cursor: pointer;">Dark Mode</button>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <button id="darkModeToggle" style="padding: 8px 12px; cursor: pointer;">Dark Mode</button>
     </div>
     
     <div class="container">
@@ -149,7 +149,6 @@
     </div>
 
     <script>
-        // Add this at the start of your script section
         // Dark Mode Persistence
         const darkModeToggle = document.getElementById('darkModeToggle');
         const currentMode = localStorage.getItem('darkMode') || 'light';
