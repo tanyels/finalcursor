@@ -404,6 +404,45 @@
             text-align: right;
             font-weight: bold;
         }
+
+        /* Add these styles to your existing CSS */
+        .coin-name-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 150px;  /* Adjust this value as needed */
+        }
+
+        .coin-name-text {
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        /* Add these keyframes and styles to your existing <style> section */
+        @keyframes pulseGreen {
+            0% { color: #4caf50; }  /* Start with green */
+            100% { color: #ffffff; } /* End with white */
+        }
+
+        @keyframes pulseRed {
+            0% { color: #f44336; }  /* Start with red */
+            100% { color: #ffffff; } /* End with white */
+        }
+
+        .token-name.positive-pulse {
+            animation: pulseGreen 4s ease-out forwards;
+        }
+
+        .token-name.negative-pulse {
+            animation: pulseRed 4s ease-out forwards;
+        }
+
+        .price-pulse-up {
+            animation: pulseGreen 4s ease-out forwards;
+        }
+
+        .price-pulse-down {
+            animation: pulseRed 4s ease-out forwards;
+        }
     </style>
 </head>
 <body>
@@ -466,16 +505,25 @@
                 const row = document.createElement('tr');
                 const priceChange = coin.price_change_percentage_24h;
                 const changeClass = priceChange >= 0 ? 'positive' : 'negative';
-                const priceClass = priceChange >= 0 ? 'price-up' : 'price-down';
+                const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
+                const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
+                
+                // Format long names
+                let displayName = coin.name;
+                if (displayName.length > 15) {
+                    const words = displayName.split(' ');
+                    const lastWord = words.pop();
+                    displayName = `${words.join(' ')}<br>${lastWord}`;
+                }
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
-                            <div style="display: flex; flex-direction: column;">
-                                <a href="#" class="token-name" onclick="toggleDetails('${coin.id}', ${index}); return false;">
-                                    ${coin.name}
+                            <div class="coin-name-container">
+                                <a href="#" class="token-name coin-name-text ${nameClass}" onclick="toggleDetails('${coin.id}', ${index}); return false;">
+                                    ${displayName}
                                 </a>
                                 <span style="color: #888; font-size: 0.8em;">${coin.symbol.toUpperCase()}</span>
                             </div>
