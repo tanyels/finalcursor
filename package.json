@@ -1,0 +1,8 @@
+{
+  "name": "crypto-rankings",
+  "version": "1.0.0",
+  "description": "Cryptocurrency rankings with CoinGecko API",
+  "dependencies": {
+    "node-fetch": "^2.6.9"
+  }
+} 
