@@ -183,15 +183,15 @@
 
         /* Add these styles to your existing <style> section */
         td:nth-child(3) {  /* Price column (3rd column) */
-            background-color: #404040;  /* Brighter gray */
+            background-color: #505050;  /* Brighter gray */
         }
 
         tr:hover td:nth-child(3) {  /* Keep the brighter gray even on hover */
-            background-color: #454545;
+            background-color: #555555;
         }
 
         th:nth-child(3) {  /* Price column header */
-            background-color: #404040;
+            background-color: #505050;
         }
     </style>
 </head>
@@ -204,11 +204,13 @@
                 <th><span class="row-title">Name</span></th>
                 <th><span class="row-title">Price (USD)</span></th>
                 <th><span class="row-title">24h % Change</span></th>
+                <th><span class="row-title">ATH</span></th>
+                <th><span class="row-title">ATL</span></th>
             </tr>
         </thead>
         <tbody id="cryptoTableBody">
             <tr>
-                <td colspan="4">Loading...</td>
+                <td colspan="6">Loading...</td>
             </tr>
         </tbody>
     </table>
@@ -247,6 +249,10 @@
                 const changeClass = priceChange >= 0 ? 'positive' : 'negative';
                 const priceClass = priceChange >= 0 ? 'price-up' : 'price-down';
                 
+                // Calculate percentage from ATH
+                const athPercentage = ((coin.current_price - coin.ath) / coin.ath * 100).toFixed(2);
+                const atlPercentage = ((coin.current_price - coin.atl) / coin.atl * 100).toFixed(2);
+                
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
                     <td>
@@ -257,6 +263,14 @@
                     </td>
                     <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
                     <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                    <td>
+                        $${coin.ath.toLocaleString()}
+                        <span class="negative">(${athPercentage}%)</span>
+                    </td>
+                    <td>
+                        $${coin.atl.toLocaleString()}
+                        <span class="positive">(+${atlPercentage}%)</span>
+                    </td>
                 `;
                 tableBody.appendChild(row);
             });
