@@ -3,230 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Detail</title>
+    <title>Crypto Details</title>
     <style>
-        /* CSS Variables for Light and Dark Modes */
         :root {
-            --background-color: #ffffff;
-            --text-color: #000000;
-            --border-color: #888888;
-            --header-bg: #f2f2f2;
-            --button-bg: #f2f2f2;
-            --button-hover-bg: #e0e0e0;
-            --link-color: #1a0dab;
+            --primary-color: #2196F3;
+            --border-color: #ddd;
+            --card-bg: #f9f9f9;
+            --text-color: #333;
+            --positive-color: #4CAF50;
+            --negative-color: #f44336;
         }
 
-        /* Dark mode overrides */
-        body.dark-mode {
-            --background-color: #121212;
-            --text-color: #f0f0f0;
-            --border-color: #555555;
-            --header-bg: #1e1e1e;
-            --button-bg: #1e1e1e;
-            --button-hover-bg: #333333;
-            --link-color: #8ab4f8;
-        }
-
-        /* Global Styles */
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
             color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Dark Mode Toggle */
-        .toggle-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .dark-mode-toggle {
-            cursor: pointer;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 14px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .dark-mode-toggle:hover {
-            background-color: var(--button-hover-bg);
-        }
-
-        /* Back Button */
-        .back-button {
-            cursor: pointer;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 14px;
-            transition: background-color 0.3s, color 0.3s;
-            margin-bottom: 20px;
-        }
-
-        .back-button:hover {
-            background-color: var(--button-hover-bg);
-        }
-
-        /* Detail Container */
-        .detail-container {
-            max-width: 800px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        .detail-header {
-            display: flex;
+        .back-button {
+            display: inline-flex;
             align-items: center;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
             margin-bottom: 20px;
         }
 
-        .detail-header img {
-            width: 50px;
-            height: 50px;
-            margin-right: 20px;
+        .coin-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
         }
 
-        .detail-header h2 {
+        .coin-header img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .coin-header h1 {
             margin: 0;
         }
 
-        .detail-content p {
-            margin: 8px 0;
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        .detail-content a {
-            color: var(--link-color);
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .positive { color: var(--positive-color); }
+        .negative { color: var(--negative-color); }
+
+        .links-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .link-button {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
             text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
-        .detail-content a:hover {
-            text-decoration: underline;
+        .description {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .detail-container {
-                padding: 0 10px;
-            }
-
-            .detail-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .detail-header img {
-                margin-bottom: 10px;
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <div class="toggle-container">
-        <button class="dark-mode-toggle" id="darkModeToggle">Dark Mode</button>
-    </div>
-
-    <!-- Back Button -->
-    <button class="back-button" onclick="goBack()">← Back to List</button>
-
-    <div class="detail-container" id="detailContainer">
-        <p>Loading...</p>
+    <div class="container">
+        <a href="index.html" class="back-button">← Back to List</a>
+        <div id="coinDetails">Loading...</div>
     </div>
 
     <script>
-        // Dark Mode Persistence
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const currentMode = localStorage.getItem('darkMode') || 'light';
-
-        if (currentMode === 'dark') {
-            document.body.classList.add('dark-mode');
-            darkModeToggle.textContent = 'Light Mode';
-        }
-
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                darkModeToggle.textContent = 'Light Mode';
-                localStorage.setItem('darkMode', 'dark');
-            } else {
-                darkModeToggle.textContent = 'Dark Mode';
-                localStorage.setItem('darkMode', 'light');
-            }
-        });
-
-        // Function to Go Back
-        function goBack() {
-            window.history.back();
-        }
-
-        // Function to Get Query Parameter
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // Fetch and Display Coin Details
-        async function fetchCoinDetails(coinId) {
+        async function fetchCoinDetails() {
             try {
-                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                const urlParams = new URLSearchParams(window.location.search);
+                const coinId = urlParams.get('coinId');
+
+                if (!coinId) {
+                    throw new Error('No coin ID provided');
                 }
+
+                const response = await fetch(
+                    `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true&sparkline=true`
+                );
                 const data = await response.json();
 
-                displayCoinDetails(data);
+                document.title = `${data.name} (${data.symbol.toUpperCase()}) - Crypto Details`;
+
+                const detailsContainer = document.getElementById('coinDetails');
+                detailsContainer.innerHTML = `
+                    <div class="coin-header">
+                        <img src="${data.image.large}" alt="${data.name} logo">
+                        <div>
+                            <h1>${data.name} (${data.symbol.toUpperCase()})</h1>
+                            <p>Rank #${data.market_cap_rank || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-container">
+                        <div class="card">
+                            <h3>Price Information</h3>
+                            <div class="data-row">
+                                <span>Current Price:</span>
+                                <span>$${data.market_data.current_price.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>24h Low / High:</span>
+                                <span>$${data.market_data.low_24h.usd.toLocaleString()} / $${data.market_data.high_24h.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>All-Time High:</span>
+                                <span>$${data.market_data.ath.usd.toLocaleString()} (${new Date(data.market_data.ath_date.usd).toLocaleDateString()})</span>
+                            </div>
+                            <div class="data-row">
+                                <span>All-Time Low:</span>
+                                <span>$${data.market_data.atl.usd.toLocaleString()} (${new Date(data.market_data.atl_date.usd).toLocaleDateString()})</span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Price Changes</h3>
+                            <div class="data-row">
+                                <span>24h Change:</span>
+                                <span class="${data.market_data.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_24h?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>7d Change:</span>
+                                <span class="${data.market_data.price_change_percentage_7d >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_7d?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>30d Change:</span>
+                                <span class="${data.market_data.price_change_percentage_30d >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_30d?.toFixed(2)}%
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span>1y Change:</span>
+                                <span class="${data.market_data.price_change_percentage_1y >= 0 ? 'positive' : 'negative'}">
+                                    ${data.market_data.price_change_percentage_1y?.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Market Stats</h3>
+                            <div class="data-row">
+                                <span>Market Cap:</span>
+                                <span>$${data.market_data.market_cap.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>24h Volume:</span>
+                                <span>$${data.market_data.total_volume.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Circulating Supply:</span>
+                                <span>${data.market_data.circulating_supply.toLocaleString()} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Total Supply:</span>
+                                <span>${data.market_data.total_supply ? data.market_data.total_supply.toLocaleString() : 'N/A'} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                        </div>
+
+                        ${data.developer_data ? `
+                            <div class="card">
+                                <h3>Developer Data</h3>
+                                <div class="data-row">
+                                    <span>GitHub Stars:</span>
+                                    <span>${data.developer_data.stars || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Forks:</span>
+                                    <span>${data.developer_data.forks || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Issues:</span>
+                                    <span>${data.developer_data.total_issues || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Contributors:</span>
+                                    <span>${data.developer_data.contributors || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${data.community_data ? `
+                            <div class="card">
+                                <h3>Community Stats</h3>
+                                <div class="data-row">
+                                    <span>Twitter Followers:</span>
+                                    <span>${data.community_data.twitter_followers?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Reddit Subscribers:</span>
+                                    <span>${data.community_data.reddit_subscribers?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span>Telegram Users:</span>
+                                    <span>${data.community_data.telegram_channel_user_count?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="card">
+                        <h3>Links</h3>
+                        <div class="links-section">
+                            ${data.links.homepage[0] ? `<a href="${data.links.homepage[0]}" target="_blank" class="link-button">Website</a>` : ''}
+                            ${data.links.blockchain_site[0] ? `<a href="${data.links.blockchain_site[0]}" target="_blank" class="link-button">Blockchain Explorer</a>` : ''}
+                            ${data.links.official_forum_url[0] ? `<a href="${data.links.official_forum_url[0]}" target="_blank" class="link-button">Official Forum</a>` : ''}
+                            ${data.links.subreddit_url ? `<a href="${data.links.subreddit_url}" target="_blank" class="link-button">Reddit</a>` : ''}
+                            ${data.links.twitter_screen_name ? `<a href="https://twitter.com/${data.links.twitter_screen_name}" target="_blank" class="link-button">Twitter</a>` : ''}
+                            ${data.links.telegram_channel_identifier ? `<a href="https://t.me/${data.links.telegram_channel_identifier}" target="_blank" class="link-button">Telegram</a>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="description">
+                        <h3>About ${data.name}</h3>
+                        <div>${data.description.en || 'No description available.'}</div>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Error fetching coin details:', error);
-                const container = document.getElementById('detailContainer');
-                container.innerHTML = '<p>Error loading coin details.</p>';
+                document.getElementById('coinDetails').innerHTML = 'Error loading coin details. Please try again later.';
             }
         }
 
-        function displayCoinDetails(data) {
-            const container = document.getElementById('detailContainer');
-            container.innerHTML = `
-                <div class="detail-header">
-                    <img src="${data.image.large}" alt="${data.name} logo">
-                    <h2>${data.name} (${data.symbol.toUpperCase()})</h2>
-                </div>
-                <div class="detail-content">
-                    <p><strong>Current Price:</strong> $${data.market_data.current_price.usd.toLocaleString()}</p>
-                    <p><strong>Market Cap:</strong> $${data.market_data.market_cap.usd.toLocaleString()}</p>
-                    <p><strong>24h Trading Volume:</strong> $${data.market_data.total_volume.usd.toLocaleString()}</p>
-                    <p><strong>24h High:</strong> $${data.market_data.high_24h.usd.toLocaleString()}</p>
-                    <p><strong>24h Low:</strong> $${data.market_data.low_24h.usd.toLocaleString()}</p>
-                    <p><strong>Price Change 24h:</strong> ${data.market_data.price_change_percentage_24h?.toFixed(2) || 0}%</p>
-                    <p><strong>Price Change 7d:</strong> ${data.market_data.price_change_percentage_7d?.toFixed(2) || 0}%</p>
-                    <p><strong>Price Change 30d:</strong> ${data.market_data.price_change_percentage_30d?.toFixed(2) || 0}%</p>
-                    <p><strong>Circulating Supply:</strong> ${data.market_data.circulating_supply.toLocaleString()} ${data.symbol.toUpperCase()}</p>
-                    <p><strong>Total Supply:</strong> ${data.market_data.total_supply ? data.market_data.total_supply.toLocaleString() : 'N/A'}</p>
-                    <h3>Description:</h3>
-                    <p>${data.description.en ? data.description.en.replace(/<\/?[^>]+(>|$)/g, "") : 'No description available.'}</p>
-                    <p><strong>Homepage:</strong> ${data.links.homepage[0] ? `<a href="${data.links.homepage[0]}" target="_blank">${data.links.homepage[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Blockchain Site:</strong> ${data.links.blockchain_site[0] ? `<a href="${data.links.blockchain_site[0]}" target="_blank">${data.links.blockchain_site[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Official Forum:</strong> ${data.links.official_forum_url[0] ? `<a href="${data.links.official_forum_url[0]}" target="_blank">${data.links.official_forum_url[0]}</a>` : 'N/A'}</p>
-                    <p><strong>GitHub:</strong> ${data.links.repos_url.github[0] ? `<a href="${data.links.repos_url.github[0]}" target="_blank">${data.links.repos_url.github[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Twitter:</strong> ${data.links.twitter_screen_name ? `<a href="https://twitter.com/${data.links.twitter_screen_name}" target="_blank">https://twitter.com/${data.links.twitter_screen_name}</a>` : 'N/A'}</p>
-                </div>
-            `;
-        }
-
-        // Initialize
-        const coinId = getQueryParam('coinId');
-        if (coinId) {
-            fetchCoinDetails(coinId);
-        } else {
-            const container = document.getElementById('detailContainer');
-            container.innerHTML = '<p>No coin specified.</p>';
-        }
+        fetchCoinDetails();
     </script>
 </body>
 </html>
