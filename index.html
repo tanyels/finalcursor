@@ -48,14 +48,17 @@
             </tr>
         </tbody>
     </table>
+
     <script>
         async function fetchData() {
             try {
                 const response = await fetch('/.netlify/functions/fetchCrypto');
                 const result = await response.json();
                 const data = result.data;
+
                 const tableBody = document.getElementById('cryptoTableBody');
                 tableBody.innerHTML = '';
+
                 data.forEach((coin, index) => {
                     const row = document.createElement('tr');
                     const priceChange = coin.price_change_percentage_24h;
@@ -73,8 +76,10 @@
                 console.error('Error fetching data:', error);
             }
         }
+
         // Fetch initial data
         fetchData();
+
         // Update data every minute
         setInterval(fetchData, 60000);
     </script>
