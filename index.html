@@ -150,6 +150,23 @@
         .negative {
             color: var(--negative-color);
         }
+
+        .row-title {
+            color: #03d8f3;
+        }
+
+        .token-name {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .price-up {
+            color: var(--positive-color);
+        }
+
+        .price-down {
+            color: var(--negative-color);
+        }
     </style>
 </head>
 <body>
@@ -157,10 +174,10 @@
     <table id="cryptoTable">
         <thead>
             <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Price (USD)</th>
-                <th>24h % Change</th>
+                <th><span class="row-title">Rank</span></th>
+                <th><span class="row-title">Name</span></th>
+                <th><span class="row-title">Price (USD)</span></th>
+                <th><span class="row-title">24h % Change</span></th>
             </tr>
         </thead>
         <tbody id="cryptoTableBody">
@@ -202,11 +219,12 @@
                 const row = document.createElement('tr');
                 const priceChange = coin.price_change_percentage_24h;
                 const changeClass = priceChange >= 0 ? 'positive' : 'negative';
+                const priceClass = priceChange >= 0 ? 'price-up' : 'price-down';
                 
                 row.innerHTML = `
-                    <td>${(currentPage - 1) * coinsPerPage + index + 1}</td>
-                    <td><a href="coin-detail.html?coinId=${coin.id}">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
-                    <td>$${coin.current_price.toLocaleString()}</td>
+                    <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
+                    <td><a href="coin-detail.html?coinId=${coin.id}" class="token-name">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
+                    <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
                     <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
                 `;
                 tableBody.appendChild(row);
