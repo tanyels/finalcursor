@@ -167,6 +167,19 @@
         .price-down {
             color: var(--negative-color);
         }
+
+        /* Add this to your existing styles */
+        .coin-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        td {
+            vertical-align: middle;  /* This ensures content is vertically centered */
+        }
     </style>
 </head>
 <body>
@@ -223,7 +236,12 @@
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
-                    <td><a href="coin-detail.html?coinId=${coin.id}" class="token-name">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
+                            <a href="coin-detail.html?coinId=${coin.id}" class="token-name">${coin.name} (${coin.symbol.toUpperCase()})</a>
+                        </div>
+                    </td>
                     <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
                     <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
                 `;
