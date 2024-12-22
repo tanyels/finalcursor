@@ -1,87 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
++           border: 1px solid #ddd;
         }
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
++           border-right: 1px solid #ddd;
++           border-left: 1px solid #ddd;
         }
         th {
             background-color: #f2f2f2;
         }
-        .positive {
-            color: green;
-        }
-        .negative {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-    <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
-    <table id="cryptoTable">
+
+        // ... rest of styles ...
+
         <thead>
             <tr>
                 <th>Rank</th>
+                <th>Icon</th>
                 <th>Name</th>
+                <th>Symbol</th>
                 <th>Price (USD)</th>
-                <th>24h % Change</th>
+                <th>24h Change %</th>
+                <th>24h High</th>
+                <th>24h Low</th>
+                <th>Market Cap</th>
+                <th>Total Volume</th>
+                <th>Circulating Supply</th>
+                <th>Total Supply</th>
+                <th>Max Supply</th>
+                <th>ATH</th>
+                <th>ATH Date</th>
+                <th>ATH Change %</th>
+                <th>ATL</th>
+                <th>ATL Date</th>
+                <th>ATL Change %</th>
             </tr>
         </thead>
-        <tbody id="cryptoTableBody">
-            <tr>
-                <td colspan="4">Loading...</td>
-            </tr>
-        </tbody>
-    </table>
 
-    <script>
-        async function fetchData() {
-            try {
-                const response = await fetch('/.netlify/functions/fetchCrypto');
-                const result = await response.json();
-                const data = result.data;
+        // ... in the fetchData function, replace the row.innerHTML with:
 
-                const tableBody = document.getElementById('cryptoTableBody');
-                tableBody.innerHTML = '';
-
-                data.forEach((coin, index) => {
-                    const row = document.createElement('tr');
-                    const priceChange = coin.price_change_percentage_24h;
-                    const changeClass = priceChange >= 0 ? 'positive' : 'negative';
-                    
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${coin.name} (${coin.symbol.toUpperCase()})</td>
-                        <td>$${coin.current_price.toLocaleString()}</td>
-                        <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        // Fetch initial data
-        fetchData();
-
-        // Update data every minute
-        setInterval(fetchData, 60000);
-    </script>
-</body>
-</html> 
+        row.innerHTML = `
+            <td>${coin.market_cap_rank || index + 1}</td>
+            <td><img src="${coin.image}" width="20" height="20" alt="${coin.name}"></td>
+            <td>${coin.name}</td>
+            <td>${coin.symbol.toUpperCase()}</td>
+            <td>$${coin.current_price.toLocaleString()}</td>
+            <td class="${changeClass}">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+            <td>$${coin.high_24h.toLocaleString()}</td>
+            <td>$${coin.low_24h.toLocaleString()}</td>
+            <td>$${coin.market_cap.toLocaleString()}</td>
+            <td>$${coin.total_volume.toLocaleString()}</td>
+            <td>${coin.circulating_supply.toLocaleString()} ${coin.symbol.toUpperCase()}</td>
+            <td>${coin.total_supply ? coin.total_supply.toLocaleString() : 'N/A'} ${coin.symbol.toUpperCase()}</td>
+            <td>${coin.max_supply ? coin.max_supply.toLocaleString() : 'N/A'} ${coin.symbol.toUpperCase()}</td>
+            <td>$${coin.ath.toLocaleString()}</td>
+            <td>${new Date(coin.ath_date).toLocaleDateString()}</td>
+            <td class="${coin.ath_change_percentage >= 0 ? 'positive' : 'negative'}">${coin.ath_change_percentage.toFixed(2)}%</td>
+            <td>$${coin.atl.toLocaleString()}</td>
+            <td>${new Date(coin.atl_date).toLocaleDateString()}</td>
+            <td class="${coin.atl_change_percentage >= 0 ? 'positive' : 'negative'}">${coin.atl_change_percentage.toFixed(2)}%</td>
+        `;
