@@ -180,6 +180,19 @@
         td {
             vertical-align: middle;  /* This ensures content is vertically centered */
         }
+
+        /* Add these styles to your existing <style> section */
+        td:nth-child(3) {  /* Price column (3rd column) */
+            background-color: #404040;  /* Brighter gray */
+        }
+
+        tr:hover td:nth-child(3) {  /* Keep the brighter gray even on hover */
+            background-color: #454545;
+        }
+
+        th:nth-child(3) {  /* Price column header */
+            background-color: #404040;
+        }
     </style>
 </head>
 <body>
