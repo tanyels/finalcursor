@@ -497,16 +497,9 @@
     </style>
 </head>
 <body>
-    <!-- Add search bar here -->
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
         <div id="searchSuggestions"></div>
-    </div>
-
-    <!-- Add this after the search container and before the h1 -->
-    <div class="category-filters" id="categoryFilters">
-        <button class="category-button active" data-category="all">All</button>
-        <!-- Other category buttons will be added dynamically -->
     </div>
 
     <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
@@ -627,27 +620,36 @@
             }
         }
 
-        function displayData(data) {
+        async function displayData(data) {
             const tableBody = document.getElementById('cryptoTableBody');
             
-            // Check if data is valid
             if (!data || !Array.isArray(data) || data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4">No data available for this category</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4">No data available</td></tr>';
                 return;
             }
 
             tableBody.innerHTML = '';
 
-            data.forEach((coin, index) => {
-                // Skip invalid coin data
-                if (!coin || !coin.current_price || !coin.ath) return;
+            for (const coin of data) {
+                if (!coin || !coin.current_price || !coin.ath) continue;
+
+                // Fetch coin details to get category
+                let categoryInfo = '';
+                try {
+                    const response = await fetch(`/.netlify/functions/fetchCrypto?coinId=${coin.id}`);
+                    const result = await response.json();
+                    if (result.data && result.data.categories && result.data.categories[0]) {
+                        categoryInfo = ` - ${result.data.categories[0]}`;
+                    }
+                } catch (error) {
+                    console.error('Error fetching coin category:', error);
+                }
 
                 const row = document.createElement('tr');
                 const priceChange = coin.price_change_percentage_24h || 0;
                 const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
                 const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
                 
-                // Calculate ATH multiplier with safety checks
                 const athMultiplier = coin.current_price > 0 ? (coin.ath / coin.current_price).toFixed(2) : '0.00';
                 
                 row.innerHTML = `
@@ -659,7 +661,7 @@
                                 <a href="#" class="token-name coin-name-text ${nameClass}" onclick="toggleDetails('${coin.id}', ${index}); return false;">
                                     ${coin.name || 'Unknown'}
                                 </a>
-                                <span style="color: #888; font-size: 0.8em;">${(coin.symbol || '???').toUpperCase()}</span>
+                                <span style="color: #888; font-size: 0.8em;">${(coin.symbol || '???').toUpperCase()}${categoryInfo}</span>
                             </div>
                         </div>
                     </td>
@@ -694,7 +696,7 @@
                     </td>
                 `;
                 tableBody.appendChild(expandableRow);
-            });
+            }
         }
 
         function displayPagination() {
