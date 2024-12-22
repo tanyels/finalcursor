@@ -79,9 +79,20 @@ exports.handler = async function(event, context) {
         const response = await fetch(
             `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=${page}`
         );
-        
+
+        if (!response.ok) {
+            console.error(`API Error: ${response.status} ${response.statusText}`);
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        }
+
         const data = await response.json();
-        
+
+        // Verify data is an array
+        if (!Array.isArray(data)) {
+            console.error('Invalid data format received:', data);
+            throw new Error('Invalid data format received from API');
+        }
+
         // Update cache for this page
         cachedData.set(cacheKey, data);
         lastFetchTimes.set(cacheKey, now);
