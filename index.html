@@ -532,7 +532,6 @@
                 
                 // Format dates
                 const athDate = new Date(coin.ath_date).toLocaleDateString();
-                const atlDate = new Date(coin.atl_date).toLocaleDateString();
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
@@ -562,12 +561,7 @@
                             <span style="color: #888; font-size: 0.8em;">${athDate}</span>
                         </div>
                     </td>
-                    <td>
-                        <div style="display: flex; flex-direction: column;">
-                            <span>$${coin.atl.toLocaleString()}</span>
-                            <span style="color: #888; font-size: 0.8em;">${atlDate}</span>
-                        </div>
-                    </td>
+                    <td>$${coin.atl.toLocaleString()}</td>
                 `;
                 tableBody.appendChild(row);
 
