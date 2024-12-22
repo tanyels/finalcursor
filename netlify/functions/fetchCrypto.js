@@ -97,16 +97,19 @@ exports.handler = async function(event, context) {
             };
         }
 
-        const categoryParam = category ? `&category=${category}` : '';
+        const categoryParam = category && category !== 'all' ? `&category=${category}` : '';
         const apiUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`;
 
         try {
+            console.log('Fetching from URL:', apiUrl);
             const response = await fetch(apiUrl);
             
             if (!response.ok) {
                 console.error(`CoinGecko API error: ${response.status} - ${response.statusText}`);
                 console.error('Request URL:', apiUrl);
-                throw new Error(`API responded with status ${response.status}`);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`API responded with status ${response.status}: ${errorText}`);
             }
 
             const data = await response.json();
@@ -120,10 +123,6 @@ exports.handler = async function(event, context) {
             // If the category returns empty data, try without category
             if (data.length === 0 && category && category !== 'all') {
                 console.warn(`No data for category: ${category}, falling back to all coins`);
-                const fallbackResponse = await fetch(
-                    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}`
-                );
-                const fallbackData = await fallbackResponse.json();
                 return {
                     statusCode: 200,
                     headers: {
@@ -131,9 +130,9 @@ exports.handler = async function(event, context) {
                         'Access-Control-Allow-Origin': '*'
                     },
                     body: JSON.stringify({
-                        data: fallbackData,
-                        fromCache: false,
-                        fallback: true
+                        data: [],
+                        message: `No coins found in category: ${category}`,
+                        fromCache: false
                     })
                 };
             }
@@ -156,14 +155,23 @@ exports.handler = async function(event, context) {
             };
 
         } catch (error) {
-            console.error('Serverless function error:', error);
-            console.error('Request URL:', apiUrl);
+            console.error('Error in category fetch:', error);
+            throw error;
+        }
+
+        // Add a new condition for fetching categories
+        if (event.queryStringParameters?.getCategories === 'true') {
+            const response = await fetch('https://api.coingecko.com/api/v3/coins/categories/list');
+            const data = await response.json();
             return {
-                statusCode: 500,
-                body: JSON.stringify({ 
-                    error: 'Failed fetching data',
-                    details: error.message,
-                    category: category
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    data: data,
+                    fromCache: false
                 })
             };
         }
