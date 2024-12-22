@@ -443,6 +443,28 @@
         .price-pulse-down {
             animation: pulseRed 4s ease-out forwards;
         }
+
+        /* Add these styles to your existing CSS */
+        td > div {
+            white-space: nowrap;
+        }
+
+        td:nth-child(3) > div {  /* Price column */
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        td:nth-child(3) > div > span:first-child {  /* Price value */
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        td:nth-child(3) > div > div {  /* 24h change container */
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -529,8 +551,15 @@
                             </div>
                         </div>
                     </td>
-                    <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
-                    <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="${priceClass}">$${coin.current_price.toLocaleString()}</span>
+                            <div style="font-size: 0.8em;">
+                                <span style="color: #888;">last 24h</span>
+                                <span class="${changeClass}">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                    </td>
                     <td>$${coin.ath.toLocaleString()}</td>
                     <td>$${coin.atl.toLocaleString()}</td>
                 `;
