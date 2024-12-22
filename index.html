@@ -221,7 +221,10 @@
 
             /* Make certain columns fixed width */
             td:first-child, th:first-child {  /* Rank column */
-                min-width: 50px;
+                width: 40px;
+                min-width: 40px;
+                max-width: 40px;
+                text-align: center;  /* Center the rank number */
             }
 
             td:nth-child(2), th:nth-child(2) {  /* Name column */
