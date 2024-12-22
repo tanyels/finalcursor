@@ -473,9 +473,12 @@
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
-                            <a href="#" class="token-name" onclick="toggleDetails('${coin.id}', ${index}); return false;">
-                                ${coin.name} (${coin.symbol.toUpperCase()})
-                            </a>
+                            <div style="display: flex; flex-direction: column;">
+                                <a href="#" class="token-name" onclick="toggleDetails('${coin.id}', ${index}); return false;">
+                                    ${coin.name}
+                                </a>
+                                <span style="color: #888; font-size: 0.8em;">${coin.symbol.toUpperCase()}</span>
+                            </div>
                         </div>
                     </td>
                     <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
