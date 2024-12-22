@@ -21,6 +21,7 @@
             --suggestion-hover-bg: #f0f0f0;
             --button-bg: #f2f2f2;
             --button-hover-bg: #e0e0e0;
+            --link-color: #1a0dab;
         }
 
         /* Dark mode overrides */
@@ -39,6 +40,7 @@
             --suggestion-hover-bg: #333333;
             --button-bg: #1e1e1e;
             --button-hover-bg: #333333;
+            --link-color: #8ab4f8;
         }
 
         /* Global Styles */
@@ -197,6 +199,16 @@
                 max-width: 100%;
             }
         }
+
+        /* Link Styles */
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -283,7 +295,7 @@
                 
                 row.innerHTML = `
                     <td>${(currentPage - 1) * coinsPerPage + index + 1}</td>
-                    <td><a href="coin-detail.html?coinId=${coin.id}" style="color: inherit; text-decoration: none;">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
+                    <td><a href="coin-detail.html?coinId=${coin.id}">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
                     <td>$${coin.current_price.toLocaleString()}</td>
                     <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
                 `;
