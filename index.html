@@ -530,13 +530,9 @@
                 const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
                 const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
                 
-                // Format long names
-                let displayName = coin.name;
-                if (displayName.length > 15) {
-                    const words = displayName.split(' ');
-                    const lastWord = words.pop();
-                    displayName = `${words.join(' ')}<br>${lastWord}`;
-                }
+                // Format dates
+                const athDate = new Date(coin.ath_date).toLocaleDateString();
+                const atlDate = new Date(coin.atl_date).toLocaleDateString();
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
@@ -560,8 +556,18 @@
                             </div>
                         </div>
                     </td>
-                    <td>$${coin.ath.toLocaleString()}</td>
-                    <td>$${coin.atl.toLocaleString()}</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span>$${coin.ath.toLocaleString()}</span>
+                            <span style="color: #888; font-size: 0.8em;">${athDate}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span>$${coin.atl.toLocaleString()}</span>
+                            <span style="color: #888; font-size: 0.8em;">${atlDate}</span>
+                        </div>
+                    </td>
                 `;
                 tableBody.appendChild(row);
 
