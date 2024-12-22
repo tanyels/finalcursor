@@ -193,6 +193,118 @@
         th:nth-child(3) {  /* Price column header */
             background-color: #505050;
         }
+
+        /* Add/update these styles in your <style> section */
+
+        /* Base responsive styles */
+        @media screen and (max-width: 768px) {
+            body {
+                margin: 10px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            /* Table adjustments */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 8px;
+                min-width: 80px;
+            }
+
+            /* Make certain columns fixed width */
+            td:first-child, th:first-child {  /* Rank column */
+                min-width: 50px;
+            }
+
+            td:nth-child(2), th:nth-child(2) {  /* Name column */
+                min-width: 200px;
+            }
+
+            td:nth-child(3), th:nth-child(3) {  /* Price column */
+                min-width: 100px;
+            }
+
+            /* Pagination adjustments */
+            .pagination button {
+                padding: 6px 10px;
+                margin: 1px;
+                font-size: 12px;
+            }
+
+            /* Search bar adjustments */
+            .search-container {
+                max-width: 100%;
+                margin: 0 0 15px 0;
+            }
+
+            #searchInput {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .suggestion-item {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* Extra small devices */
+        @media screen and (max-width: 480px) {
+            body {
+                margin: 5px;
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            /* Adjust coin name and logo display */
+            td div {
+                gap: 5px !important;
+            }
+
+            img[alt] {  /* Coin logos */
+                width: 20px !important;
+                height: 20px !important;
+            }
+
+            /* Compact pagination */
+            .pagination {
+                margin-top: 15px;
+            }
+
+            .pagination button {
+                padding: 5px 8px;
+                min-width: 30px;
+            }
+        }
+
+        /* Make table horizontally scrollable */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 15px;
+            background:
+                linear-gradient(to right, var(--background-color) 30%, rgba(255, 255, 255, 0)),
+                linear-gradient(to right, rgba(255, 255, 255, 0), var(--background-color) 70%) 0 100%,
+                radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)),
+                radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)) 0 100%;
+            background-repeat: no-repeat;
+            background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+            background-position: 0 0, 100%, 0 0, 100%;
+            background-attachment: local, local, scroll, scroll;
+        }
     </style>
 </head>
 <body>
@@ -203,23 +315,25 @@
     </div>
 
     <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
-    <table id="cryptoTable">
-        <thead>
-            <tr>
-                <th><span class="row-title">Rank</span></th>
-                <th><span class="row-title">Name</span></th>
-                <th><span class="row-title">Price (USD)</span></th>
-                <th><span class="row-title">24h % Change</span></th>
-                <th><span class="row-title">ATH</span></th>
-                <th><span class="row-title">ATL</span></th>
-            </tr>
-        </thead>
-        <tbody id="cryptoTableBody">
-            <tr>
-                <td colspan="6">Loading...</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table id="cryptoTable">
+            <thead>
+                <tr>
+                    <th><span class="row-title">Rank</span></th>
+                    <th><span class="row-title">Name</span></th>
+                    <th><span class="row-title">Price (USD)</span></th>
+                    <th><span class="row-title">24h % Change</span></th>
+                    <th><span class="row-title">ATH</span></th>
+                    <th><span class="row-title">ATL</span></th>
+                </tr>
+            </thead>
+            <tbody id="cryptoTableBody">
+                <tr>
+                    <td colspan="6">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="pagination" id="pagination"></div>
 
