@@ -409,12 +409,13 @@
         .coin-name-container {
             display: flex;
             flex-direction: column;
-            max-width: 150px;  /* Adjust this value as needed */
+            max-width: 120px;  /* Reduced from 150px */
         }
 
         .coin-name-text {
             word-wrap: break-word;
             line-height: 1.2;
+            white-space: normal;  /* Allow text to wrap */
         }
 
         /* Add these keyframes and styles to your existing <style> section */
@@ -563,7 +564,15 @@
                 const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
                 const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
                 
-                // Calculate ATH multiplier instead of percentage
+                // Format long names
+                let displayName = coin.name;
+                if (displayName.length > 15 && displayName.includes(' ')) {
+                    const words = displayName.split(' ');
+                    const lastWord = words.pop();
+                    displayName = `${words.join(' ')}<br>${lastWord}`;
+                }
+                
+                // Calculate ATH multiplier
                 const athMultiplier = (coin.ath / coin.current_price).toFixed(2);
                 
                 row.innerHTML = `
@@ -573,7 +582,7 @@
                             <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
                             <div class="coin-name-container">
                                 <a href="#" class="token-name coin-name-text ${nameClass}" onclick="toggleDetails('${coin.id}', ${index}); return false;">
-                                    ${coin.name}
+                                    ${displayName}
                                 </a>
                                 <span style="color: #888; font-size: 0.8em;">${coin.symbol.toUpperCase()}</span>
                             </div>
