@@ -465,38 +465,10 @@
             gap: 5px;
             align-items: center;
         }
-
-        /* Add these styles to your CSS */
-        .category-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
-            justify-content: center;
-        }
-
-        .category-button {
-            padding: 8px 16px;
-            background-color: var(--table-header-bg);
-            border: 1px solid var(--table-border-color);
-            color: var(--text-color);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .category-button:hover {
-            background-color: var(--suggestion-hover-bg);
-        }
-
-        .category-button.active {
-            background-color: var(--accent-color);
-            color: var(--background-color);
-            border-color: var(--accent-color);
-        }
     </style>
 </head>
 <body>
+    <!-- Add search bar here -->
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
         <div id="searchSuggestions"></div>
@@ -534,83 +506,55 @@
             try {
                 const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}`);
                 const result = await response.json();
-                
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
                 const data = result.data;
-                if (!data) {
-                    throw new Error('No data received');
-                }
 
                 displayData(data);
                 displayPagination();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 const tableBody = document.getElementById('cryptoTableBody');
-                tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error.message}</td></tr>`;
+                tableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
             }
         }
 
-        async function displayData(data) {
+        function displayData(data) {
             const tableBody = document.getElementById('cryptoTableBody');
-            
-            if (!data || !Array.isArray(data) || data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4">No data available</td></tr>';
-                return;
-            }
-
             tableBody.innerHTML = '';
 
-            for (let index = 0; index < data.length; index++) {
-                const coin = data[index];
-                if (!coin || !coin.current_price || !coin.ath) continue;
-
-                // Fetch coin details to get category
-                let categoryInfo = '';
-                try {
-                    const response = await fetch(`/.netlify/functions/fetchCrypto?coinId=${coin.id}`);
-                    const result = await response.json();
-                    if (result.data && result.data.categories && result.data.categories[0]) {
-                        categoryInfo = ` - ${result.data.categories[0]}`;
-                    }
-                } catch (error) {
-                    console.error('Error fetching coin category:', error);
-                }
-
+            data.forEach((coin, index) => {
                 const row = document.createElement('tr');
-                const priceChange = coin.price_change_percentage_24h || 0;
+                const priceChange = coin.price_change_percentage_24h;
                 const priceClass = priceChange >= 0 ? 'price-pulse-up' : 'price-pulse-down';
                 const nameClass = priceChange >= 0 ? 'positive-pulse' : 'negative-pulse';
                 
-                const athMultiplier = coin.current_price > 0 ? (coin.ath / coin.current_price).toFixed(2) : '0.00';
+                // Calculate ATH multiplier instead of percentage
+                const athMultiplier = (coin.ath / coin.current_price).toFixed(2);
                 
                 row.innerHTML = `
                     <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${coin.image || ''}" alt="${coin.name || 'Unknown'}" style="width: 24px; height: 24px;">
+                            <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
                             <div class="coin-name-container">
                                 <a href="#" class="token-name coin-name-text ${nameClass}" onclick="toggleDetails('${coin.id}', ${index}); return false;">
-                                    ${coin.name || 'Unknown'}
+                                    ${coin.name}
                                 </a>
-                                <span style="color: #888; font-size: 0.8em;">${(coin.symbol || '???').toUpperCase()}${categoryInfo}</span>
+                                <span style="color: #888; font-size: 0.8em;">${coin.symbol.toUpperCase()}</span>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div style="display: flex; flex-direction: column;">
-                            <span class="${priceClass}">$${(coin.current_price || 0).toLocaleString()}</span>
+                            <span class="${priceClass}">$${coin.current_price.toLocaleString()}</span>
                             <div style="font-size: 0.8em;">
                                 <span style="color: #888;">last 24h</span>
-                                <span class="${priceChange >= 0 ? 'positive' : 'negative'}">${priceChange >= 0 ? '+' : ''}${priceChange?.toFixed(2) || '0.00'}%</span>
+                                <span class="${priceChange >= 0 ? 'positive' : 'negative'}">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</span>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div style="display: flex; flex-direction: column;">
-                            <span>$${(coin.ath || 0).toLocaleString()}</span>
+                            <span>$${coin.ath.toLocaleString()}</span>
                             <span style="color: #888; font-size: 0.8em;">
                                 <span style="color: #4caf50; font-weight: bold;">${athMultiplier}x</span> from now </span>
                         </div>
@@ -630,7 +574,7 @@
                     </td>
                 `;
                 tableBody.appendChild(expandableRow);
-            }
+            });
         }
 
         function displayPagination() {
@@ -705,7 +649,7 @@
                     const data = result.data;
                     
                     searchSuggestions.innerHTML = '';
-                    if (data.coins && data.coins.length > 0) {
+                    if (data.coins.length > 0) {
                         data.coins.slice(0, 10).forEach(coin => {
                             const div = document.createElement('div');
                             div.className = 'suggestion-item';
