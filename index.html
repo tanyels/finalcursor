@@ -465,6 +465,29 @@
             gap: 5px;
             align-items: center;
         }
+
+        /* Add to your existing styles */
+        #pageInput {
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #pageInput::-webkit-inner-spin-button,
+        #pageInput::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+
+        .pagination button {
+            /* Update existing pagination button styles */
+            margin: 2px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border: 1px solid var(--table-border-color);
+            background-color: var(--table-header-bg);
+            color: var(--text-color);
+            min-width: 35px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -508,12 +531,26 @@
                 const result = await response.json();
                 const data = result.data;
 
+                // Add error checking
+                if (!Array.isArray(data)) {
+                    console.error('Invalid data format received:', data);
+                    const tableBody = document.getElementById('cryptoTableBody');
+                    tableBody.innerHTML = '<tr><td colspan="4">Error: Could not load data for this page. API limit may have been reached.</td></tr>';
+                    return;
+                }
+
+                if (data.length === 0) {
+                    const tableBody = document.getElementById('cryptoTableBody');
+                    tableBody.innerHTML = '<tr><td colspan="4">No data available for this page.</td></tr>';
+                    return;
+                }
+
                 displayData(data);
                 displayPagination();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 const tableBody = document.getElementById('cryptoTableBody');
-                tableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4">Error loading data. You may have reached the API rate limit. Please wait a minute and try again.</td></tr>';
             }
         }
 
@@ -589,13 +626,8 @@
                 pagination.appendChild(prevButton);
             }
 
-            // Page Numbers (Grouping by 10)
-            const maxPageButtons = 10;
-            let startPage = Math.floor((currentPage - 1) / maxPageButtons) * maxPageButtons + 1;
-            let endPage = startPage + maxPageButtons - 1;
-            if (endPage > totalPages) endPage = totalPages;
-
-            for (let i = startPage; i <= endPage; i++) {
+            // First 10 Pages
+            for (let i = 1; i <= 10; i++) {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
                 if (i === currentPage) {
@@ -612,6 +644,61 @@
                 nextButton.textContent = 'Next';
                 nextButton.onclick = () => changePage(currentPage + 1);
                 pagination.appendChild(nextButton);
+            }
+
+            // Add page input box
+            const pageInputContainer = document.createElement('div');
+            pageInputContainer.style.marginTop = '10px';
+            pageInputContainer.innerHTML = `
+                <input type="number" id="pageInput" min="1" placeholder="Go to page..." 
+                    style="padding: 8px; width: 100px; margin-right: 10px; background: var(--search-bg); color: var(--text-color); border: 1px solid var(--table-border-color);">
+                <button onclick="goToInputPage()">Go</button>
+            `;
+            pagination.appendChild(pageInputContainer);
+        }
+
+        // Add this new function to handle page input
+        async function goToInputPage() {
+            const input = document.getElementById('pageInput');
+            let targetPage = parseInt(input.value);
+            
+            try {
+                // First try to fetch the target page to see if it exists
+                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${targetPage}&per_page=${coinsPerPage}`);
+                const result = await response.json();
+                const data = result.data;
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    // If page doesn't exist, fetch the last page
+                    let lastPage = 1;
+                    let hasData = true;
+                    
+                    // Binary search to find the last available page
+                    let left = 1;
+                    let right = 1000; // Start with a reasonable upper limit
+                    
+                    while (left <= right) {
+                        const mid = Math.floor((left + right) / 2);
+                        const testResponse = await fetch(`/.netlify/functions/fetchCrypto?page=${mid}&per_page=${coinsPerPage}`);
+                        const testResult = await testResponse.json();
+                        
+                        if (Array.isArray(testResult.data) && testResult.data.length > 0) {
+                            lastPage = mid;
+                            left = mid + 1;
+                        } else {
+                            right = mid - 1;
+                        }
+                    }
+                    
+                    targetPage = lastPage;
+                    input.value = lastPage; // Update input to show the actual page
+                }
+
+                // Change to the valid page
+                changePage(targetPage);
+            } catch (error) {
+                console.error('Error finding page:', error);
+                alert('Error finding page. Please try again.');
             }
         }
 
