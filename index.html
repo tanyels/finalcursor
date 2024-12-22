@@ -174,7 +174,7 @@
 
     <script>
         let allCoins = [];
-        const ITEMS_PER_PAGE = 50;
+        const ITEMS_PER_PAGE = 100;
         let currentPage = 1;
         let filteredCoins = [];
 
@@ -299,15 +299,23 @@
 
         async function fetchCoinData() {
             try {
+                document.getElementById('coin-list').innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
+                
                 const response = await fetch('/api/fetchCoinData');
                 allCoins = await response.json();
+                
+                // Sort by market cap (in case the order was disturbed)
+                allCoins.sort((a, b) => b.market_cap - a.market_cap);
+                
                 filterCoins(document.getElementById('searchInput').value);
                 displayCoins();
                 
                 document.getElementById('last-updated').textContent = 
-                    `Last updated: ${new Date().toLocaleTimeString()}`;
+                    `Last updated: ${new Date().toLocaleTimeString()} (Total: ${allCoins.length} coins)`;
             } catch (error) {
                 console.error('Error:', error);
+                document.getElementById('coin-list').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; color: red;">Error loading data. Please try again later.</td></tr>';
             }
         }
 
