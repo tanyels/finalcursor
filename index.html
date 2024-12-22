@@ -1,36 +1,686 @@
-async function toggleDetails(coinId, index) {
-    const detailsRow = document.getElementById(`details-${coinId}`);
-    const isExpanded = detailsRow.classList.contains('expanded');
-    
-    // Close all other expanded rows
-    document.querySelectorAll('.expandable-row.expanded').forEach(row => {
-        if (row.id !== `details-${coinId}`) {
-            row.classList.remove('expanded');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Tracker</title>
+    <style>
+        :root {
+            --background-color: #2c2c2c;
+            --text-color: #ffffff;
+            --table-border-color: #444444;
+            --table-header-bg: #383838;
+            --table-row-hover: #3a3a3a;
+            --accent-color: #ffd700;  /* Yellow accent */
+            --positive-color: #4caf50;
+            --negative-color: #f44336;
+            --search-bg: #383838;
+            --search-text: #ffffff;
+            --suggestion-bg: #383838;
+            --suggestion-hover-bg: #444444;
+            --link-color: #ffd700;
         }
-    });
 
-    if (!isExpanded) {
-        detailsRow.classList.add('expanded');
-        const detailsContent = document.getElementById(`details-content-${coinId}`);
-        
-        try {
-            const response = await fetch(
-                `/.netlify/functions/fetchCrypto?coinId=${coinId}`
-            );
-            const result = await response.json();
-            const data = result.data;
-            
-            // Rest of the display code remains the same
-            detailsContent.innerHTML = `
-                <div class="detail-list">
-                    // ... existing detail display code ...
-                </div>
-            `;
-        } catch (error) {
-            console.error('Error fetching coin details:', error);
-            detailsContent.innerHTML = 'Error loading details. Please try again.';
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
-    } else {
-        detailsRow.classList.remove('expanded');
-    }
-}
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: var(--search-bg);
+            color: var(--search-text);
+            border: 1px solid var(--table-border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #searchSuggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--suggestion-bg);
+            border: 1px solid var(--table-border-color);
+            border-top: none;
+            display: none;
+            z-index: 1000;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .suggestion-item {
+            padding: 12px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .suggestion-item:hover {
+            background-color: var(--suggestion-hover-bg);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border: 1px solid var(--table-border-color);
+            background-color: var(--table-header-bg);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--table-border-color);
+            border-right: 1px solid var(--table-border-color);
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            margin: 2px;
+            cursor: pointer;
+            border: 1px solid var(--table-border-color);
+            background-color: var(--table-header-bg);
+            color: var(--text-color);
+            min-width: 35px;
+            border-radius: 4px;
+        }
+
+        .pagination button:hover {
+            background-color: var(--suggestion-hover-bg);
+        }
+
+        .pagination button.active {
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Link Styles */
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Positive/Negative Colors */
+        .positive {
+            color: var(--positive-color);
+        }
+
+        .negative {
+            color: var(--negative-color);
+        }
+
+        .row-title {
+            color: #03d8f3;
+        }
+
+        .token-name {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .price-up {
+            color: var(--positive-color);
+        }
+
+        .price-down {
+            color: var(--negative-color);
+        }
+
+        /* Add this to your existing styles */
+        .coin-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        td {
+            vertical-align: middle;  /* This ensures content is vertically centered */
+        }
+
+        /* Add these styles to your existing <style> section */
+        td:nth-child(3) {  /* Price column (3rd column) */
+            background-color: #505050;  /* Brighter gray */
+        }
+
+        tr:hover td:nth-child(3) {  /* Keep the brighter gray even on hover */
+            background-color: #555555;
+        }
+
+        th:nth-child(3) {  /* Price column header */
+            background-color: #505050;
+        }
+
+        /* Add/update these styles in your <style> section */
+
+        /* Base responsive styles */
+        @media screen and (max-width: 768px) {
+            body {
+                margin: 10px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            /* Table adjustments */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 8px;
+                min-width: 80px;
+            }
+
+            /* Make certain columns fixed width */
+            td:first-child, th:first-child {  /* Rank column */
+                width: 40px;
+                min-width: 40px;
+                max-width: 40px;
+                text-align: center;  /* Center the rank number */
+            }
+
+            td:nth-child(2), th:nth-child(2) {  /* Name column */
+                min-width: 200px;
+            }
+
+            td:nth-child(3), th:nth-child(3) {  /* Price column */
+                min-width: 100px;
+            }
+
+            /* Pagination adjustments */
+            .pagination button {
+                padding: 6px 10px;
+                margin: 1px;
+                font-size: 12px;
+            }
+
+            /* Search bar adjustments */
+            .search-container {
+                max-width: 100%;
+                margin: 0 0 15px 0;
+            }
+
+            #searchInput {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .suggestion-item {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* Extra small devices */
+        @media screen and (max-width: 480px) {
+            body {
+                margin: 5px;
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            /* Adjust coin name and logo display */
+            td div {
+                gap: 5px !important;
+            }
+
+            img[alt] {  /* Coin logos */
+                width: 20px !important;
+                height: 20px !important;
+            }
+
+            /* Compact pagination */
+            .pagination {
+                margin-top: 15px;
+            }
+
+            .pagination button {
+                padding: 5px 8px;
+                min-width: 30px;
+            }
+        }
+
+        /* Make table horizontally scrollable */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 15px;
+            background:
+                linear-gradient(to right, var(--background-color) 30%, rgba(255, 255, 255, 0)),
+                linear-gradient(to right, rgba(255, 255, 255, 0), var(--background-color) 70%) 0 100%,
+                radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)),
+                radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)) 0 100%;
+            background-repeat: no-repeat;
+            background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+            background-position: 0 0, 100%, 0 0, 100%;
+            background-attachment: local, local, scroll, scroll;
+        }
+
+        /* Update table styles */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: auto;  /* Changed from 100% to auto */
+            min-width: min-content;  /* Ensures minimum width based on content */
+            margin: 0 auto;  /* Centers the table */
+        }
+
+        /* Column width specifications */
+        th, td {
+            padding: 12px 15px;
+            white-space: nowrap;
+        }
+
+        /* Specific column widths */
+        td:first-child, th:first-child {  /* Rank */
+            width: 40px;
+            min-width: 40px;
+            max-width: 40px;
+            text-align: center;
+        }
+
+        td:nth-child(2), th:nth-child(2) {  /* Name */
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        td:nth-child(3), th:nth-child(3) {  /* Price */
+            min-width: 100px;
+            max-width: 120px;
+        }
+
+        td:nth-child(4), th:nth-child(4) {  /* 24h Change */
+            min-width: 80px;
+            max-width: 100px;
+        }
+
+        td:nth-child(5), th:nth-child(5),
+        td:nth-child(6), th:nth-child(6) {  /* ATH/ATL */
+            min-width: 120px;
+            max-width: 150px;
+        }
+
+        /* Ensure text doesn't wrap */
+        td > div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Add these styles to your existing <style> section */
+        .expandable-row {
+            background-color: #383838;
+            display: none;
+        }
+
+        .expandable-row.expanded {
+            display: table-row;
+        }
+
+        .expandable-row > td {
+            padding: 15px 20px;
+        }
+
+        .detail-list {
+            max-width: 600px;  /* Limit width for better readability */
+            margin: 0 auto;    /* Center the list */
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--table-border-color);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #03d8f3;  /* Same color as row titles */
+            margin-right: 20px;
+        }
+
+        .detail-value {
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add search bar here -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
+        <div id="searchSuggestions"></div>
+    </div>
+
+    <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
+    <div class="table-container">
+        <table id="cryptoTable">
+            <thead>
+                <tr>
+                    <th><span class="row-title">Rank</span></th>
+                    <th><span class="row-title">Name</span></th>
+                    <th><span class="row-title">Price (USD)</span></th>
+                    <th><span class="row-title">24h % Change</span></th>
+                    <th><span class="row-title">ATH</span></th>
+                    <th><span class="row-title">ATL</span></th>
+                </tr>
+            </thead>
+            <tbody id="cryptoTableBody">
+                <tr>
+                    <td colspan="6">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <script>
+        // Pagination Variables
+        let currentPage = 1;
+        const coinsPerPage = 100;
+        const totalPages = 100; // Adjust as needed based on available data
+
+        // Fetch and Display Data
+        async function fetchData(page = 1) {
+            try {
+                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}`);
+                const result = await response.json();
+                const data = result.data;
+
+                displayData(data);
+                displayPagination();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                const tableBody = document.getElementById('cryptoTableBody');
+                tableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
+            }
+        }
+
+        function displayData(data) {
+            const tableBody = document.getElementById('cryptoTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach((coin, index) => {
+                const row = document.createElement('tr');
+                const priceChange = coin.price_change_percentage_24h;
+                const changeClass = priceChange >= 0 ? 'positive' : 'negative';
+                const priceClass = priceChange >= 0 ? 'price-up' : 'price-down';
+                
+                row.innerHTML = `
+                    <td><span class="row-title">${(currentPage - 1) * coinsPerPage + index + 1}</span></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${coin.image}" alt="${coin.name}" style="width: 24px; height: 24px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <a href="#" class="token-name" onclick="toggleDetails('${coin.id}', ${index}); return false;">
+                                    ${coin.name}
+                                </a>
+                                <span style="color: #888; font-size: 0.8em;">${coin.symbol.toUpperCase()}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="${priceClass}">$${coin.current_price.toLocaleString()}</td>
+                    <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                    <td>$${coin.ath.toLocaleString()}</td>
+                    <td>$${coin.atl.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+
+                // Create expandable row
+                const expandableRow = document.createElement('tr');
+                expandableRow.className = 'expandable-row';
+                expandableRow.id = `details-${coin.id}`;
+                expandableRow.innerHTML = `
+                    <td colspan="6">
+                        <div class="detail-list">
+                            <div id="details-content-${coin.id}">Loading...</div>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(expandableRow);
+            });
+        }
+
+        function displayPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Previous Button
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Previous';
+                prevButton.onclick = () => changePage(currentPage - 1);
+                pagination.appendChild(prevButton);
+            }
+
+            // Page Numbers (Grouping by 10)
+            const maxPageButtons = 10;
+            let startPage = Math.floor((currentPage - 1) / maxPageButtons) * maxPageButtons + 1;
+            let endPage = startPage + maxPageButtons - 1;
+            if (endPage > totalPages) endPage = totalPages;
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                    pageButton.disabled = true;
+                }
+                pageButton.onclick = () => changePage(i);
+                pagination.appendChild(pageButton);
+            }
+
+            // Next Button
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.onclick = () => changePage(currentPage + 1);
+                pagination.appendChild(nextButton);
+            }
+        }
+
+        async function changePage(page) {
+            currentPage = page;
+            await fetchData(page);
+            window.scrollTo(0, 0);
+        }
+
+        // Initial Fetch
+        fetchData();
+
+        // Update Data Every Minute
+        setInterval(() => fetchData(currentPage), 60000);
+
+        // Search Functionality
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                searchSuggestions.style.display = 'none';
+                searchSuggestions.innerHTML = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/.netlify/functions/fetchCrypto?search=${encodeURIComponent(query)}`);
+                    const result = await response.json();
+                    const data = result.data;
+                    
+                    searchSuggestions.innerHTML = '';
+                    if (data.coins.length > 0) {
+                        data.coins.slice(0, 10).forEach(coin => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `${coin.name} (${coin.symbol.toUpperCase()})`;
+                            div.onclick = () => {
+                                window.location.href = `coin-detail.html?coinId=${coin.id}`;
+                            };
+                            searchSuggestions.appendChild(div);
+                        });
+                        searchSuggestions.style.display = 'block';
+                    } else {
+                        searchSuggestions.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching search suggestions:', error);
+                    searchSuggestions.style.display = 'none';
+                }
+            }, 300);
+        });
+
+        // Hide Suggestions When Clicking Outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+
+        async function toggleDetails(coinId, index) {
+            const detailsRow = document.getElementById(`details-${coinId}`);
+            const isExpanded = detailsRow.classList.contains('expanded');
+            
+            // Close all other expanded rows
+            document.querySelectorAll('.expandable-row.expanded').forEach(row => {
+                if (row.id !== `details-${coinId}`) {
+                    row.classList.remove('expanded');
+                }
+            });
+
+            if (!isExpanded) {
+                detailsRow.classList.add('expanded');
+                const detailsContent = document.getElementById(`details-content-${coinId}`);
+                
+                try {
+                    const response = await fetch(`/.netlify/functions/fetchCrypto?coinId=${coinId}`);
+                    const result = await response.json();
+                    const data = result.data;
+                    
+                    detailsContent.innerHTML = `
+                        <div class="detail-list">
+                            <div class="detail-item">
+                                <span class="detail-label">Market Cap Rank:</span>
+                                <span class="detail-value">#${data.market_cap_rank || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Market Cap:</span>
+                                <span class="detail-value">$${data.market_data.market_cap.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">24h Trading Volume:</span>
+                                <span class="detail-value">$${data.market_data.total_volume.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">24h High:</span>
+                                <span class="detail-value">$${data.market_data.high_24h.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">24h Low:</span>
+                                <span class="detail-value">$${data.market_data.low_24h.usd.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Circulating Supply:</span>
+                                <span class="detail-value">${data.market_data.circulating_supply.toLocaleString()} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Supply:</span>
+                                <span class="detail-value">${data.market_data.total_supply ? data.market_data.total_supply.toLocaleString() : 'N/A'} ${data.symbol.toUpperCase()}</span>
+                            </div>
+                            ${data.developer_data?.stars ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">GitHub Stars:</span>
+                                    <span class="detail-value">${data.developer_data.stars}</span>
+                                </div>
+                            ` : ''}
+                            ${data.community_data?.twitter_followers ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">Twitter Followers:</span>
+                                    <span class="detail-value">${data.community_data.twitter_followers.toLocaleString()}</span>
+                                </div>
+                            ` : ''}
+                            ${data.community_data?.reddit_subscribers ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">Reddit Subscribers:</span>
+                                    <span class="detail-value">${data.community_data.reddit_subscribers.toLocaleString()}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('Error fetching coin details:', error);
+                    detailsContent.innerHTML = 'Error loading details. Please try again.';
+                }
+            } else {
+                detailsRow.classList.remove('expanded');
+            }
+        }
+    </script>
+</body>
+</html>
