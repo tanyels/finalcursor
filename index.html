@@ -3,28 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Detail</title>
+    <title>Crypto Tracker</title>
     <style>
         /* CSS Variables for Light and Dark Modes */
         :root {
             --background-color: #ffffff;
             --text-color: #000000;
-            --border-color: #888888;
-            --header-bg: #f2f2f2;
+            --table-border-color: #888888;
+            --table-header-bg: #f2f2f2;
+            --pagination-border-color: #888888;
+            --pagination-hover-color: #e0e0e0;
+            --positive-color: #4caf50;
+            --negative-color: #f44336;
+            --search-bg: #ffffff;
+            --search-text: #000000;
+            --suggestion-bg: #ffffff;
+            --suggestion-hover-bg: #f0f0f0;
             --button-bg: #f2f2f2;
             --button-hover-bg: #e0e0e0;
-            --link-color: #1a0dab;
         }
 
         /* Dark mode overrides */
         body.dark-mode {
             --background-color: #121212;
             --text-color: #f0f0f0;
-            --border-color: #555555;
-            --header-bg: #1e1e1e;
+            --table-border-color: #555555;
+            --table-header-bg: #1e1e1e;
+            --pagination-border-color: #555555;
+            --pagination-hover-color: #333333;
+            --positive-color: #81c784;
+            --negative-color: #e57373;
+            --search-bg: #1e1e1e;
+            --search-text: #f0f0f0;
+            --suggestion-bg: #1e1e1e;
+            --suggestion-hover-bg: #333333;
             --button-bg: #1e1e1e;
             --button-hover-bg: #333333;
-            --link-color: #8ab4f8;
         }
 
         /* Global Styles */
@@ -48,7 +62,7 @@
             cursor: pointer;
             background-color: var(--button-bg);
             color: var(--text-color);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--table-border-color);
             border-radius: 4px;
             padding: 8px 12px;
             font-size: 14px;
@@ -59,71 +73,128 @@
             background-color: var(--button-hover-bg);
         }
 
-        /* Back Button */
-        .back-button {
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: var(--search-bg);
+            color: var(--search-text);
+            border: 1px solid var(--table-border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #searchSuggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--suggestion-bg);
+            border: 1px solid var(--table-border-color);
+            border-top: none;
+            display: none;
+            z-index: 1000;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .suggestion-item {
+            padding: 10px;
             cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .suggestion-item:hover {
+            background-color: var(--suggestion-hover-bg);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border: 1px solid var(--table-border-color);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--table-border-color);
+            border-right: 1px solid var(--table-border-color);
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+        }
+
+        /* Enhanced Table Lines */
+        table, th, td {
+            border-width: 1px;
+            border-style: solid;
+            border-color: var(--table-border-color);
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .pagination-row {
+            margin: 5px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 6px 10px;
+            margin: 2px;
+            cursor: pointer;
+            border: 1px solid var(--pagination-border-color);
             background-color: var(--button-bg);
             color: var(--text-color);
-            border: 1px solid var(--border-color);
+            min-width: 35px;
             border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 14px;
             transition: background-color 0.3s, color 0.3s;
-            margin-bottom: 20px;
         }
 
-        .back-button:hover {
-            background-color: var(--button-hover-bg);
+        .pagination button:hover {
+            background-color: var(--pagination-hover-bg);
         }
 
-        /* Detail Container */
-        .detail-container {
-            max-width: 800px;
-            margin: 0 auto;
+        .pagination button.active {
+            background-color: #bbb;
+            cursor: default;
         }
 
-        .detail-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+        /* Positive/Negative Colors */
+        .positive {
+            color: var(--positive-color);
         }
 
-        .detail-header img {
-            width: 50px;
-            height: 50px;
-            margin-right: 20px;
-        }
-
-        .detail-header h2 {
-            margin: 0;
-        }
-
-        .detail-content p {
-            margin: 8px 0;
-        }
-
-        .detail-content a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-
-        .detail-content a:hover {
-            text-decoration: underline;
+        .negative {
+            color: var(--negative-color);
         }
 
         /* Responsive Design */
         @media (max-width: 600px) {
-            .detail-container {
-                padding: 0 10px;
-            }
-
-            .detail-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .detail-header img {
-                margin-bottom: 10px;
+            .search-container {
+                max-width: 100%;
             }
         }
     </style>
@@ -134,12 +205,30 @@
         <button class="dark-mode-toggle" id="darkModeToggle">Dark Mode</button>
     </div>
 
-    <!-- Back Button -->
-    <button class="back-button" onclick="goBack()">← Back to List</button>
-
-    <div class="detail-container" id="detailContainer">
-        <p>Loading...</p>
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
+        <div id="searchSuggestions"></div>
     </div>
+
+    <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
+    <table id="cryptoTable">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Price (USD)</th>
+                <th>24h % Change</th>
+            </tr>
+        </thead>
+        <tbody id="cryptoTableBody">
+            <tr>
+                <td colspan="4">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
 
     <script>
         // Dark Mode Persistence
@@ -162,68 +251,144 @@
             }
         });
 
-        // Function to Go Back
-        function goBack() {
-            window.history.back();
-        }
+        // Pagination Variables
+        let currentPage = 1;
+        const coinsPerPage = 100;
+        const totalPages = 100; // Adjust as needed based on available data
 
-        // Function to Get Query Parameter
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // Fetch and Display Coin Details
-        async function fetchCoinDetails(coinId) {
+        // Fetch and Display Data
+        async function fetchData(page = 1) {
             try {
-                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`);
-                const data = await response.json();
+                const response = await fetch(`/.netlify/functions/fetchCrypto?page=${page}&per_page=${coinsPerPage}`);
+                const result = await response.json();
+                const data = result.data;
 
-                displayCoinDetails(data);
+                displayData(data);
+                displayPagination();
             } catch (error) {
-                console.error('Error fetching coin details:', error);
-                const container = document.getElementById('detailContainer');
-                container.innerHTML = '<p>Error loading coin details.</p>';
+                console.error('Error fetching data:', error);
+                const tableBody = document.getElementById('cryptoTableBody');
+                tableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
             }
         }
 
-        function displayCoinDetails(data) {
-            const container = document.getElementById('detailContainer');
-            container.innerHTML = `
-                <div class="detail-header">
-                    <img src="${data.image.large}" alt="${data.name} logo">
-                    <h2>${data.name} (${data.symbol.toUpperCase()})</h2>
-                </div>
-                <div class="detail-content">
-                    <p><strong>Current Price:</strong> $${data.market_data.current_price.usd.toLocaleString()}</p>
-                    <p><strong>Market Cap:</strong> $${data.market_data.market_cap.usd.toLocaleString()}</p>
-                    <p><strong>24h Trading Volume:</strong> $${data.market_data.total_volume.usd.toLocaleString()}</p>
-                    <p><strong>24h High:</strong> $${data.market_data.high_24h.usd.toLocaleString()}</p>
-                    <p><strong>24h Low:</strong> $${data.market_data.low_24h.usd.toLocaleString()}</p>
-                    <p><strong>Price Change 24h:</strong> ${data.market_data.price_change_percentage_24h?.toFixed(2) || 0}%</p>
-                    <p><strong>Price Change 7d:</strong> ${data.market_data.price_change_percentage_7d?.toFixed(2) || 0}%</p>
-                    <p><strong>Price Change 30d:</strong> ${data.market_data.price_change_percentage_30d?.toFixed(2) || 0}%</p>
-                    <p><strong>Circulating Supply:</strong> ${data.market_data.circulating_supply.toLocaleString()} ${data.symbol.toUpperCase()}</p>
-                    <p><strong>Total Supply:</strong> ${data.market_data.total_supply ? data.market_data.total_supply.toLocaleString() : 'N/A'}</p>
-                    <h3>Description:</h3>
-                    <p>${data.description.en ? data.description.en.replace(/<\/?[^>]+(>|$)/g, "") : 'No description available.'}</p>
-                    <p><strong>Homepage:</strong> ${data.links.homepage[0] ? `<a href="${data.links.homepage[0]}" target="_blank">${data.links.homepage[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Blockchain Site:</strong> ${data.links.blockchain_site[0] ? `<a href="${data.links.blockchain_site[0]}" target="_blank">${data.links.blockchain_site[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Official Forum:</strong> ${data.links.official_forum_url[0] ? `<a href="${data.links.official_forum_url[0]}" target="_blank">${data.links.official_forum_url[0]}</a>` : 'N/A'}</p>
-                    <p><strong>GitHub:</strong> ${data.links.repos_url.github[0] ? `<a href="${data.links.repos_url.github[0]}" target="_blank">${data.links.repos_url.github[0]}</a>` : 'N/A'}</p>
-                    <p><strong>Twitter:</strong> ${data.links.twitter_screen_name ? `<a href="https://twitter.com/${data.links.twitter_screen_name}" target="_blank">https://twitter.com/${data.links.twitter_screen_name}</a>` : 'N/A'}</p>
-                </div>
-            `;
+        function displayData(data) {
+            const tableBody = document.getElementById('cryptoTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach((coin, index) => {
+                const row = document.createElement('tr');
+                const priceChange = coin.price_change_percentage_24h;
+                const changeClass = priceChange >= 0 ? 'positive' : 'negative';
+                
+                row.innerHTML = `
+                    <td>${(currentPage - 1) * coinsPerPage + index + 1}</td>
+                    <td><a href="coin-detail.html?coinId=${coin.id}" style="color: inherit; text-decoration: none;">${coin.name} (${coin.symbol.toUpperCase()})</a></td>
+                    <td>$${coin.current_price.toLocaleString()}</td>
+                    <td class="${changeClass}">${priceChange.toFixed(2)}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
 
-        // Initialize
-        const coinId = getQueryParam('coinId');
-        if (coinId) {
-            fetchCoinDetails(coinId);
-        } else {
-            const container = document.getElementById('detailContainer');
-            container.innerHTML = '<p>No coin specified.</p>';
+        function displayPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Previous Button
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Previous';
+                prevButton.onclick = () => changePage(currentPage - 1);
+                pagination.appendChild(prevButton);
+            }
+
+            // Page Numbers (Grouping by 10)
+            const maxPageButtons = 10;
+            let startPage = Math.floor((currentPage - 1) / maxPageButtons) * maxPageButtons + 1;
+            let endPage = startPage + maxPageButtons - 1;
+            if (endPage > totalPages) endPage = totalPages;
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                    pageButton.disabled = true;
+                }
+                pageButton.onclick = () => changePage(i);
+                pagination.appendChild(pageButton);
+            }
+
+            // Next Button
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.onclick = () => changePage(currentPage + 1);
+                pagination.appendChild(nextButton);
+            }
         }
+
+        async function changePage(page) {
+            currentPage = page;
+            await fetchData(page);
+            window.scrollTo(0, 0);
+        }
+
+        // Initial Fetch
+        fetchData();
+
+        // Update Data Every Minute
+        setInterval(() => fetchData(currentPage), 60000);
+
+        // Search Functionality
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                searchSuggestions.style.display = 'none';
+                searchSuggestions.innerHTML = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    searchSuggestions.innerHTML = '';
+                    if (data.coins.length > 0) {
+                        data.coins.slice(0, 10).forEach(coin => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `${coin.name} (${coin.symbol.toUpperCase()})`;
+                            div.onclick = () => {
+                                window.location.href = `coin-detail.html?coinId=${coin.id}`;
+                            };
+                            searchSuggestions.appendChild(div);
+                        });
+                        searchSuggestions.style.display = 'block';
+                    } else {
+                        searchSuggestions.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching search suggestions:', error);
+                    searchSuggestions.style.display = 'none';
+                }
+            }, 300);
+        });
+
+        // Hide Suggestions When Clicking Outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
