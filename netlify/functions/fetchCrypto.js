@@ -98,37 +98,75 @@ exports.handler = async function(event, context) {
         }
 
         const categoryParam = category ? `&category=${category}` : '';
-        const response = await fetch(
-            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`
-        );
-        
-        if (!response.ok) {
-            throw new Error(`API responded with status ${response.status}`);
+        const apiUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                console.error(`CoinGecko API error: ${response.status} - ${response.statusText}`);
+                console.error('Request URL:', apiUrl);
+                throw new Error(`API responded with status ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Validate data
+            if (!data || !Array.isArray(data)) {
+                console.error('Invalid data received:', data);
+                throw new Error('Invalid data received from API');
+            }
+
+            // If the category returns empty data, try without category
+            if (data.length === 0 && category && category !== 'all') {
+                console.warn(`No data for category: ${category}, falling back to all coins`);
+                const fallbackResponse = await fetch(
+                    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}`
+                );
+                const fallbackData = await fallbackResponse.json();
+                return {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify({
+                        data: fallbackData,
+                        fromCache: false,
+                        fallback: true
+                    })
+                };
+            }
+
+            // Update cache with new structure
+            if (!cachedData) cachedData = {};
+            cachedData[cacheKey] = data;
+            lastFetchTime = now;
+
+            return {
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    data: data,
+                    fromCache: false
+                })
+            };
+
+        } catch (error) {
+            console.error('Serverless function error:', error);
+            console.error('Request URL:', apiUrl);
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ 
+                    error: 'Failed fetching data',
+                    details: error.message,
+                    category: category
+                })
+            };
         }
-
-        const data = await response.json();
-
-        // Validate data
-        if (!data || !Array.isArray(data)) {
-            throw new Error('Invalid data received from API');
-        }
-
-        // Update cache with new structure
-        if (!cachedData) cachedData = {};
-        cachedData[cacheKey] = data;
-        lastFetchTime = now;
-
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                data: data,
-                fromCache: false
-            })
-        };
 
     } catch (error) {
         console.error('Serverless function error:', error);
