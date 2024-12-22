@@ -13,6 +13,9 @@ exports.handler = async function(event, context) {
     try {
         // Check if this is a coin detail request
         const coinId = event.queryStringParameters?.coinId;
+        const page = event.queryStringParameters?.page || 1;
+        const perPage = event.queryStringParameters?.per_page || 100;
+        const category = event.queryStringParameters?.category;
         
         if (coinId) {
             // Handle coin detail request
@@ -56,9 +59,11 @@ exports.handler = async function(event, context) {
             };
         }
 
-        // Handle main list request (existing code)
+        // Handle main list request
         const now = Date.now();
-        if (cachedData && (now - lastFetchTime) < CACHE_DURATION) {
+        const cacheKey = `${page}-${perPage}-${category || 'all'}`;
+        
+        if (cachedData && cachedData[cacheKey] && (now - lastFetchTime) < CACHE_DURATION) {
             return {
                 statusCode: 200,
                 headers: {
@@ -66,22 +71,22 @@ exports.handler = async function(event, context) {
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify({
-                    data: cachedData,
+                    data: cachedData[cacheKey],
                     fromCache: true
                 })
             };
         }
 
-        const category = event.queryStringParameters?.category;
         const categoryParam = category ? `&category=${category}` : '';
-
         const response = await fetch(
             `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}${categoryParam}`
         );
         
         const data = await response.json();
         
-        cachedData = data;
+        // Update cache with new structure
+        if (!cachedData) cachedData = {};
+        cachedData[cacheKey] = data;
         lastFetchTime = now;
 
         return {
@@ -97,6 +102,7 @@ exports.handler = async function(event, context) {
         };
 
     } catch (error) {
+        console.error('Serverless function error:', error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Failed fetching data' })
