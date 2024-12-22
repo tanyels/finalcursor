@@ -308,6 +308,62 @@
             background-position: 0 0, 100%, 0 0, 100%;
             background-attachment: local, local, scroll, scroll;
         }
+
+        /* Update table styles */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: auto;  /* Changed from 100% to auto */
+            min-width: min-content;  /* Ensures minimum width based on content */
+            margin: 0 auto;  /* Centers the table */
+        }
+
+        /* Column width specifications */
+        th, td {
+            padding: 12px 15px;
+            white-space: nowrap;
+        }
+
+        /* Specific column widths */
+        td:first-child, th:first-child {  /* Rank */
+            width: 40px;
+            min-width: 40px;
+            max-width: 40px;
+            text-align: center;
+        }
+
+        td:nth-child(2), th:nth-child(2) {  /* Name */
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        td:nth-child(3), th:nth-child(3) {  /* Price */
+            min-width: 100px;
+            max-width: 120px;
+        }
+
+        td:nth-child(4), th:nth-child(4) {  /* 24h Change */
+            min-width: 80px;
+            max-width: 100px;
+        }
+
+        td:nth-child(5), th:nth-child(5),
+        td:nth-child(6), th:nth-child(6) {  /* ATH/ATL */
+            min-width: 120px;
+            max-width: 150px;
+        }
+
+        /* Ensure text doesn't wrap */
+        td > div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
