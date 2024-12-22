@@ -161,19 +161,37 @@ exports.handler = async function(event, context) {
 
         // Add a new condition for fetching categories
         if (event.queryStringParameters?.getCategories === 'true') {
-            const response = await fetch('https://api.coingecko.com/api/v3/coins/categories/list');
-            const data = await response.json();
-            return {
-                statusCode: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                body: JSON.stringify({
-                    data: data,
-                    fromCache: false
-                })
-            };
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/coins/categories/list');
+                if (!response.ok) {
+                    throw new Error(`API responded with status ${response.status}`);
+                }
+                const data = await response.json();
+                return {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify({
+                        data: data,
+                        fromCache: false
+                    })
+                };
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                return {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify({
+                        data: [],
+                        error: 'Failed to fetch categories'
+                    })
+                };
+            }
         }
 
     } catch (error) {
