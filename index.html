@@ -5,74 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tracker</title>
     <style>
-        /* CSS Variables for Light and Dark Modes */
         :root {
-            --background-color: #ffffff;
-            --text-color: #000000;
-            --table-border-color: #888888;
-            --table-header-bg: #f2f2f2;
-            --pagination-border-color: #888888;
-            --pagination-hover-color: #e0e0e0;
+            --background-color: #2c2c2c;
+            --text-color: #ffffff;
+            --table-border-color: #444444;
+            --table-header-bg: #383838;
+            --table-row-hover: #3a3a3a;
+            --accent-color: #ffd700;  /* Yellow accent */
             --positive-color: #4caf50;
             --negative-color: #f44336;
-            --search-bg: #ffffff;
-            --search-text: #000000;
-            --suggestion-bg: #ffffff;
-            --suggestion-hover-bg: #f0f0f0;
-            --button-bg: #f2f2f2;
-            --button-hover-bg: #e0e0e0;
-            --link-color: #1a0dab;
+            --search-bg: #383838;
+            --search-text: #ffffff;
+            --suggestion-bg: #383838;
+            --suggestion-hover-bg: #444444;
+            --link-color: #ffd700;
         }
 
-        /* Dark mode overrides */
-        body.dark-mode {
-            --background-color: #121212;
-            --text-color: #f0f0f0;
-            --table-border-color: #555555;
-            --table-header-bg: #1e1e1e;
-            --pagination-border-color: #555555;
-            --pagination-hover-color: #333333;
-            --positive-color: #81c784;
-            --negative-color: #e57373;
-            --search-bg: #1e1e1e;
-            --search-text: #f0f0f0;
-            --suggestion-bg: #1e1e1e;
-            --suggestion-hover-bg: #333333;
-            --button-bg: #1e1e1e;
-            --button-hover-bg: #333333;
-            --link-color: #8ab4f8;
-        }
-
-        /* Global Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* Dark Mode Toggle */
-        .toggle-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .dark-mode-toggle {
-            cursor: pointer;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            border: 1px solid var(--table-border-color);
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 14px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .dark-mode-toggle:hover {
-            background-color: var(--button-hover-bg);
         }
 
         /* Search Bar */
@@ -84,14 +38,13 @@
 
         #searchInput {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
             background-color: var(--search-bg);
             color: var(--search-text);
             border: 1px solid var(--table-border-color);
             border-radius: 4px;
             box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         #searchSuggestions {
@@ -110,7 +63,7 @@
         }
 
         .suggestion-item {
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
             color: var(--text-color);
         }
@@ -125,28 +78,24 @@
             border-collapse: collapse;
             margin-top: 20px;
             border: 1px solid var(--table-border-color);
+            background-color: var(--table-header-bg);
         }
 
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
             border-bottom: 1px solid var(--table-border-color);
             border-right: 1px solid var(--table-border-color);
         }
 
-        th:last-child, td:last-child {
-            border-right: none;
-        }
-
         th {
             background-color: var(--table-header-bg);
+            color: var(--accent-color);
+            font-weight: bold;
         }
 
-        /* Enhanced Table Lines */
-        table, th, td {
-            border-width: 1px;
-            border-style: solid;
-            border-color: var(--table-border-color);
+        tr:hover {
+            background-color: var(--table-row-hover);
         }
 
         /* Pagination Styles */
@@ -156,32 +105,41 @@
             padding: 10px 0;
         }
 
-        .pagination-row {
-            margin: 5px 0;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
         .pagination button {
-            padding: 6px 10px;
+            padding: 8px 12px;
             margin: 2px;
             cursor: pointer;
-            border: 1px solid var(--pagination-border-color);
-            background-color: var(--button-bg);
+            border: 1px solid var(--table-border-color);
+            background-color: var(--table-header-bg);
             color: var(--text-color);
             min-width: 35px;
             border-radius: 4px;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .pagination button:hover {
-            background-color: var(--pagination-hover-bg);
+            background-color: var(--suggestion-hover-bg);
         }
 
         .pagination button.active {
-            background-color: #bbb;
-            cursor: default;
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Link Styles */
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         /* Positive/Negative Colors */
@@ -192,37 +150,9 @@
         .negative {
             color: var(--negative-color);
         }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .search-container {
-                max-width: 100%;
-            }
-        }
-
-        /* Link Styles */
-        a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <div class="toggle-container">
-        <button class="dark-mode-toggle" id="darkModeToggle">Dark Mode</button>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search for a cryptocurrency...">
-        <div id="searchSuggestions"></div>
-    </div>
-
     <h1>Top 100 Cryptocurrencies (CoinGecko)</h1>
     <table id="cryptoTable">
         <thead>
@@ -243,26 +173,6 @@
     <div class="pagination" id="pagination"></div>
 
     <script>
-        // Dark Mode Persistence
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const currentMode = localStorage.getItem('darkMode') || 'light';
-
-        if (currentMode === 'dark') {
-            document.body.classList.add('dark-mode');
-            darkModeToggle.textContent = 'Light Mode';
-        }
-
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                darkModeToggle.textContent = 'Light Mode';
-                localStorage.setItem('darkMode', 'dark');
-            } else {
-                darkModeToggle.textContent = 'Dark Mode';
-                localStorage.setItem('darkMode', 'light');
-            }
-        });
-
         // Pagination Variables
         let currentPage = 1;
         const coinsPerPage = 100;
