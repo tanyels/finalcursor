@@ -538,46 +538,57 @@
 
         // Add these variables at the top of your script
         let currentCategory = 'all';
-        const categories = [
-            'all',
-            'cryptocurrency',
-            'defi',
-            'smart-contract-platform',
-            'nft',
-            'gaming',
-            'metaverse',
-            'layer-1',
-            'layer_2',
-            'meme_token',
-            'stablecoin'
-        ];
 
-        // Add this function to create category buttons
-        function createCategoryButtons() {
+        // Replace the hardcoded categories array with a function to fetch categories
+        async function fetchCategories() {
+            try {
+                const response = await fetch('/.netlify/functions/fetchCrypto?getCategories=true');
+                const result = await response.json();
+                if (result.data) {
+                    // Add 'all' category at the beginning
+                    const categories = ['all', ...result.data.map(cat => cat.category_id)];
+                    return categories;
+                }
+                return ['all']; // Fallback if no categories are found
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                return ['all']; // Fallback on error
+            }
+        }
+
+        // Update the initialization code
+        async function initialize() {
+            const categories = await fetchCategories();
+            createCategoryButtons(categories);
+            fetchData();
+        }
+
+        // Update createCategoryButtons to accept categories as parameter
+        function createCategoryButtons(categories) {
             const container = document.getElementById('categoryFilters');
-            container.innerHTML = ''; // Clear existing buttons
+            container.innerHTML = '';
             
             categories.forEach(category => {
                 const button = document.createElement('button');
                 button.className = `category-button ${category === currentCategory ? 'active' : ''}`;
                 button.setAttribute('data-category', category);
-                // Format category name for display
+                
+                // Format the display name
                 const displayName = category === 'all' ? 'All' : 
-                    category.split('-')
+                    category.split('_')
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ');
+                
                 button.textContent = displayName;
                 
                 button.onclick = () => {
-                    // Update active button
                     document.querySelectorAll('.category-button').forEach(btn => {
                         btn.classList.remove('active');
                     });
                     button.classList.add('active');
                     
-                    // Update current category and fetch data
                     currentCategory = category;
-                    currentPage = 1; // Reset to first page
+                    currentPage = 1;
                     fetchData();
                 };
                 
@@ -725,7 +736,7 @@
         }
 
         // Initial Fetch
-        fetchData();
+        initialize();
 
         // Update Data Every Minute
         setInterval(() => fetchData(currentPage), 60000);
@@ -858,9 +869,6 @@
                 detailsRow.classList.remove('expanded');
             }
         }
-
-        // Add this to your initialization code
-        createCategoryButtons();
     </script>
 </body>
 </html>
