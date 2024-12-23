@@ -94,9 +94,10 @@
         async function updateCurrentPrice() {
             try {
                 const priceElement = document.getElementById('currentPrice');
-                // This is a placeholder - you'll need to implement an API endpoint
-                // that returns the latest price
-                priceElement.textContent = 'USD Loading...';
+                const response = await fetch('data/latest_prices.json');
+                const data = await response.json();
+                const price = data.EKGYO.latest_price_usd.toFixed(2);
+                priceElement.textContent = `USD ${price}`;
             } catch (error) {
                 document.getElementById('currentPrice').textContent = 'N/A';
             }

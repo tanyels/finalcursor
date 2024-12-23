@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
+import json
 
 # Get the script's directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,20 @@ merged_df = pd.merge(stock_df, usd_rates_df, on='date', how='inner')
 
 # Convert TRY prices to USD
 merged_df['price_usd'] = merged_df['Close'] / merged_df['rate']
+
+# Save latest price data to JSON
+latest_data = {
+    'EKGYO': {
+        'latest_price_usd': float(merged_df['price_usd'].iloc[-1]),
+        'latest_price_try': float(merged_df['Close'].iloc[-1]),
+        'date': merged_df['date'].iloc[-1].strftime('%Y-%m-%d'),
+        'usd_try_rate': float(merged_df['rate'].iloc[-1])
+    }
+}
+
+# Save to JSON file
+with open(os.path.join(project_root, 'data', 'latest_prices.json'), 'w') as f:
+    json.dump(latest_data, f, indent=2)
 
 # Create the graph
 plt.figure(figsize=(12, 6))
