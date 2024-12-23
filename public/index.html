@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Stocks USD History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Turkish Stocks - USD Historical Prices</h1>
+        <div class="graph-container">
+            <h2>EKGYO</h2>
+            <img src="images/EKGYO_usd.png" alt="EKGYO USD Price History">
+            <p>Last updated: <span id="lastUpdate"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Display last update time
+        fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/commits')
+            .then(response => response.json())
+            .then(data => {
+                const lastUpdate = new Date(data[0].commit.author.date);
+                document.getElementById('lastUpdate').textContent = lastUpdate.toLocaleString();
+            });
+    </script>
+</body>
+</html> 
